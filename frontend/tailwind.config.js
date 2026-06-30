@@ -7,12 +7,22 @@ module.exports = {
   ],
   theme: {
     extend: {
+      fontFamily: {
+        display: ['Outfit', 'sans-serif'],
+        body: ['Manrope', 'sans-serif'],
+      },
       borderRadius: {
         lg: 'var(--radius)',
         md: 'calc(var(--radius) - 2px)',
         sm: 'calc(var(--radius) - 4px)'
       },
       colors: {
+        gls: {
+          navy: '#002D62',
+          deep: '#001E42',
+          red: '#D90429',
+          surface: '#F8FAFC',
+        },
         background: 'hsl(var(--background))',
         foreground: 'hsl(var(--foreground))',
         card: {

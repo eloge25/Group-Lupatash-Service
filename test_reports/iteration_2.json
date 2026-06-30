@@ -1,0 +1,32 @@
+{
+  "summary": "Frontend E2E testing for GLS site: homepage (3D containers + sections), contact form submission, admin login, admin dashboard (stats, list, detail, mark-as-read, delete, logout), footer-admin-link. 5 of 6 flows pass; logout redirects to /login instead of / (homepage) due to AdminDashboard useEffect race.",
+  "backend_issues": {"critical": [], "minor": []},
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [
+      {
+        "flow": "Admin logout",
+        "issue": "Click on admin-logout lands on /login instead of homepage (/). In AdminDashboard.jsx the onClick does `logout(); navigate('/')`, but the useEffect at line 42 watches `user` and fires `navigate('/login')` once user becomes false. Because the effect runs after commit and overrides the earlier navigate('/'), the user ends up on /login.",
+        "affected_selectors": ["[data-testid=\"admin-logout\"]"]
+      }
+    ],
+    "design_issues": []
+  },
+  "test_report_links": ["/app/backend/tests/backend_test.py", "/app/test_reports/pytest/pytest_results.xml"],
+  "action_items": [
+    "Fix logout flow so user is redirected to homepage `/` after Déconnexion. Suggested fix in /app/frontend/src/pages/AdminDashboard.jsx: guard the useEffect redirect with `window.location.pathname === '/admin'` (or use `useLocation`), OR have logout only set user=false and let the effect drive redirect to '/'."
+  ],
+  "critical_code_review_comments": [
+    "AdminDashboard.jsx onClick at line 86 mixes imperative navigate with state-driven redirect from useEffect → race condition. Prefer single source of truth.",
+    "AuthContext exposes raw `user` as `false` for logged-out and `null` for loading — works but the tri-state could be replaced with a clearer status enum.",
+    "No ProtectedRoute wrapper for /admin; protection is implemented inside the page component. Consider extracting to a reusable RequireAuth component."
+  ],
+  "updated_files": [],
+  "success_rate": {"backend": "100% (verified in iteration_1)", "frontend": "83% (5/6 flows pass)"},
+  "test_credentials": "Used /app/memory/test_credentials.md admin@gls-douane.com / GlsAdmin2019!",
+  "seed_data_creation": "Submitted one TEST_ contact message via UI ('Test Tester / test_qa@example.com') and one was created earlier by pytest. Deleted one TEST_Pytest message during the run; one user-submitted message remains as unread for retest visibility.",
+  "retest_needed": true,
+  "main_agent_can_self_test": true,
+  "context_for_next_testing_agent": "Backend was already validated 11/11 in iteration_1. Public URL: REACT_APP_BACKEND_URL. Login -> /admin works. Contact form success element data-testid=contact-success appears as expected. After fixing logout redirect, retest by logging in and clicking admin-logout, expect URL `/`. Note that admin-message-list selector also matches the prefix `admin-message-` query so when counting messages, subtract 1 for the list container.",
+  "rca_of_the_issue": "Logout race condition: `onClick={() => { logout(); navigate('/'); }}`. logout() sets user=false. React batches navigate('/') and state update. After commit, AdminDashboard re-renders (still on /admin route until router transition completes) and useEffect with deps [user, navigate, load] fires because user changed: `if (user === false) navigate('/login')`. This second navigate happens AFTER the first one within the same microtask sequence, so the router lands on /login. Mitigation: add a route-check (`if (user === false && location.pathname === '/admin')`) or perform logout via an effect after navigate completes."
+}

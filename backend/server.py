@@ -1,72 +1,176 @@
-from fastapi import FastAPI, APIRouter
 from dotenv import load_dotenv
-from starlette.middleware.cors import CORSMiddleware
-from motor.motor_asyncio import AsyncIOMotorClient
-import os
-import logging
 from pathlib import Path
-from pydantic import BaseModel, Field, ConfigDict
-from typing import List
-import uuid
-from datetime import datetime, timezone
-
+import os
 
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
 
-# MongoDB connection
+from fastapi import FastAPI, APIRouter, HTTPException, Request, Depends
+from starlette.middleware.cors import CORSMiddleware
+from motor.motor_asyncio import AsyncIOMotorClient
+from pydantic import BaseModel, Field, EmailStr, BeforeValidator
+from typing import List, Optional, Annotated
+from datetime import datetime, timezone, timedelta
+from bson import ObjectId
+import logging
+import bcrypt
+import jwt
+
 mongo_url = os.environ['MONGO_URL']
 client = AsyncIOMotorClient(mongo_url)
 db = client[os.environ['DB_NAME']]
 
-# Create the main app without a prefix
-app = FastAPI()
+JWT_ALGORITHM = "HS256"
 
-# Create a router with the /api prefix
+app = FastAPI()
 api_router = APIRouter(prefix="/api")
 
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
-# Define Models
-class StatusCheck(BaseModel):
-    model_config = ConfigDict(extra="ignore")  # Ignore MongoDB's _id field
-    
-    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
-    client_name: str
-    timestamp: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+# ---------- Helpers ----------
+PyObjectId = Annotated[str, BeforeValidator(str)]
 
-class StatusCheckCreate(BaseModel):
-    client_name: str
 
-# Add your routes to the router instead of directly to app
+def hash_password(password: str) -> str:
+    return bcrypt.hashpw(password.encode("utf-8"), bcrypt.gensalt()).decode("utf-8")
+
+
+def verify_password(plain: str, hashed: str) -> bool:
+    return bcrypt.checkpw(plain.encode("utf-8"), hashed.encode("utf-8"))
+
+
+def get_jwt_secret() -> str:
+    return os.environ["JWT_SECRET"]
+
+
+def create_access_token(user_id: str, email: str) -> str:
+    payload = {
+        "sub": user_id,
+        "email": email,
+        "exp": datetime.now(timezone.utc) + timedelta(days=7),
+        "type": "access",
+    }
+    return jwt.encode(payload, get_jwt_secret(), algorithm=JWT_ALGORITHM)
+
+
+async def get_current_user(request: Request) -> dict:
+    auth_header = request.headers.get("Authorization", "")
+    token = auth_header[7:] if auth_header.startswith("Bearer ") else None
+    if not token:
+        raise HTTPException(status_code=401, detail="Non authentifié")
+    try:
+        payload = jwt.decode(token, get_jwt_secret(), algorithms=[JWT_ALGORITHM])
+        user = await db.users.find_one({"_id": ObjectId(payload["sub"])})
+        if not user:
+            raise HTTPException(status_code=401, detail="Utilisateur introuvable")
+        user["_id"] = str(user["_id"])
+        user.pop("password_hash", None)
+        return user
+    except jwt.ExpiredSignatureError:
+        raise HTTPException(status_code=401, detail="Session expirée")
+    except jwt.InvalidTokenError:
+        raise HTTPException(status_code=401, detail="Jeton invalide")
+
+
+# ---------- Models ----------
+class LoginInput(BaseModel):
+    email: EmailStr
+    password: str
+
+
+class ContactCreate(BaseModel):
+    name: str
+    email: EmailStr
+    phone: Optional[str] = ""
+    company: Optional[str] = ""
+    subject: Optional[str] = ""
+    message: str
+
+
+class ContactMessage(BaseModel):
+    id: str
+    name: str
+    email: str
+    phone: Optional[str] = ""
+    company: Optional[str] = ""
+    subject: Optional[str] = ""
+    message: str
+    read: bool = False
+    created_at: str
+
+
+# ---------- Auth routes ----------
+@api_router.post("/auth/login")
+async def login(data: LoginInput):
+    user = await db.users.find_one({"email": data.email.lower()})
+    if not user or not verify_password(data.password, user["password_hash"]):
+        raise HTTPException(status_code=401, detail="Email ou mot de passe incorrect")
+    token = create_access_token(str(user["_id"]), user["email"])
+    return {
+        "access_token": token,
+        "user": {"id": str(user["_id"]), "email": user["email"], "name": user.get("name", "Admin")},
+    }
+
+
+@api_router.get("/auth/me")
+async def me(current_user: dict = Depends(get_current_user)):
+    return {"id": current_user["_id"], "email": current_user["email"], "name": current_user.get("name", "Admin")}
+
+
+# ---------- Contact routes ----------
+@api_router.post("/contact")
+async def create_contact(data: ContactCreate):
+    doc = data.model_dump()
+    doc["read"] = False
+    doc["created_at"] = datetime.now(timezone.utc).isoformat()
+    result = await db.contacts.insert_one(doc)
+    return {"success": True, "id": str(result.inserted_id)}
+
+
+@api_router.get("/contact/messages", response_model=List[ContactMessage])
+async def list_messages(current_user: dict = Depends(get_current_user)):
+    messages = await db.contacts.find().sort("created_at", -1).to_list(1000)
+    return [
+        ContactMessage(
+            id=str(m["_id"]),
+            name=m.get("name", ""),
+            email=m.get("email", ""),
+            phone=m.get("phone", ""),
+            company=m.get("company", ""),
+            subject=m.get("subject", ""),
+            message=m.get("message", ""),
+            read=m.get("read", False),
+            created_at=m.get("created_at", ""),
+        )
+        for m in messages
+    ]
+
+
+@api_router.patch("/contact/messages/{msg_id}/read")
+async def mark_read(msg_id: str, current_user: dict = Depends(get_current_user)):
+    await db.contacts.update_one({"_id": ObjectId(msg_id)}, {"$set": {"read": True}})
+    return {"success": True}
+
+
+@api_router.delete("/contact/messages/{msg_id}")
+async def delete_message(msg_id: str, current_user: dict = Depends(get_current_user)):
+    await db.contacts.delete_one({"_id": ObjectId(msg_id)})
+    return {"success": True}
+
+
+@api_router.get("/contact/stats")
+async def stats(current_user: dict = Depends(get_current_user)):
+    total = await db.contacts.count_documents({})
+    unread = await db.contacts.count_documents({"read": False})
+    return {"total": total, "unread": unread}
+
+
 @api_router.get("/")
 async def root():
-    return {"message": "Hello World"}
+    return {"message": "GLS API"}
 
-@api_router.post("/status", response_model=StatusCheck)
-async def create_status_check(input: StatusCheckCreate):
-    status_dict = input.model_dump()
-    status_obj = StatusCheck(**status_dict)
-    
-    # Convert to dict and serialize datetime to ISO string for MongoDB
-    doc = status_obj.model_dump()
-    doc['timestamp'] = doc['timestamp'].isoformat()
-    
-    _ = await db.status_checks.insert_one(doc)
-    return status_obj
 
-@api_router.get("/status", response_model=List[StatusCheck])
-async def get_status_checks():
-    # Exclude MongoDB's _id field from the query results
-    status_checks = await db.status_checks.find({}, {"_id": 0}).to_list(1000)
-    
-    # Convert ISO string timestamps back to datetime objects
-    for check in status_checks:
-        if isinstance(check['timestamp'], str):
-            check['timestamp'] = datetime.fromisoformat(check['timestamp'])
-    
-    return status_checks
-
-# Include the router in the main app
 app.include_router(api_router)
 
 app.add_middleware(
@@ -77,12 +181,25 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Configure logging
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
-)
-logger = logging.getLogger(__name__)
+
+@app.on_event("startup")
+async def startup():
+    await db.users.create_index("email", unique=True)
+    admin_email = os.environ.get("ADMIN_EMAIL", "admin@example.com").lower()
+    admin_password = os.environ.get("ADMIN_PASSWORD", "admin123")
+    existing = await db.users.find_one({"email": admin_email})
+    if existing is None:
+        await db.users.insert_one({
+            "email": admin_email,
+            "password_hash": hash_password(admin_password),
+            "name": "Admin GLS",
+            "role": "admin",
+            "created_at": datetime.now(timezone.utc).isoformat(),
+        })
+        logger.info("Admin seeded")
+    elif not verify_password(admin_password, existing["password_hash"]):
+        await db.users.update_one({"email": admin_email}, {"$set": {"password_hash": hash_password(admin_password)}})
+
 
 @app.on_event("shutdown")
 async def shutdown_db_client():
