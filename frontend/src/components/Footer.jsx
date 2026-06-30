@@ -1,5 +1,5 @@
 import React from "react";
-import { Phone, Mail, ArrowUpRight } from "lucide-react";
+import { Phone, Mail, MapPin, ArrowUpRight } from "lucide-react";
 import { Link } from "react-router-dom";
 import { COMPANY, NAV_LINKS, SERVICES } from "../data/content";
 
@@ -44,6 +44,9 @@ export default function Footer() {
             <a href={`mailto:${COMPANY.email}`} className="flex items-center gap-2 text-sm hover:text-gls-red transition-colors">
               <Mail size={16} /> {COMPANY.email}
             </a>
+            <div className="flex items-start gap-2 text-sm text-slate-400 mt-3">
+              <MapPin size={16} className="mt-0.5 shrink-0" /> {COMPANY.address}
+            </div>
             <a href="#contact" className="mt-5 inline-flex items-center gap-1.5 bg-gls-red text-white px-5 py-2.5 rounded-full text-sm font-bold hover:bg-white hover:text-gls-navy transition-colors">
               Demander un devis <ArrowUpRight size={16} />
             </a>

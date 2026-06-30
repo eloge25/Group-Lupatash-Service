@@ -53,7 +53,7 @@ export default function Contact() {
               {[
                 { icon: Phone, label: "Téléphone", value: COMPANY.phone },
                 { icon: Mail, label: "Email", value: COMPANY.email },
-                { icon: MapPin, label: "Agence", value: "Agence en Douane — GLS SARL" },
+                { icon: MapPin, label: "Adresse", value: COMPANY.address },
               ].map((c) => (
                 <div key={c.label} className="flex items-center gap-4">
                   <div className="w-12 h-12 rounded-xl bg-gls-navy flex items-center justify-center shrink-0">
