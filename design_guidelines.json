@@ -1,0 +1,118 @@
+{
+  "project_context": {
+    "domain": "Corporate Logistics, Import/Export, Customs Agency",
+    "company_name": "Group Lupatash Service SARL (GLS)",
+    "founded": 2019,
+    "language": "French",
+    "theme": "Light",
+    "archetype": "Archetype 4: Swiss & High-Contrast",
+    "brand_colors": "Blue, White, Red"
+  },
+  "design_system": {
+    "colors": {
+      "primary": "#002D62",
+      "primary_foreground": "#FFFFFF",
+      "secondary": "#D90429",
+      "secondary_foreground": "#FFFFFF",
+      "background": "#FFFFFF",
+      "surface": "#F8FAFC",
+      "surface_glass": "rgba(255, 255, 255, 0.7)",
+      "text_main": "#0F172A",
+      "text_muted": "#64748B",
+      "border": "#E2E8F0",
+      "accent": "#F1F5F9"
+    },
+    "typography": {
+      "heading_font": "Outfit, sans-serif",
+      "body_font": "Manrope, sans-serif",
+      "h1": "text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tighter text-[#002D62]",
+      "h2": "text-2xl sm:text-3xl lg:text-4xl font-semibold tracking-tight text-[#0F172A]",
+      "h3": "text-xl sm:text-2xl font-medium tracking-tight text-[#0F172A]",
+      "body": "text-base text-[#64748B] leading-relaxed",
+      "label": "text-xs font-bold tracking-[0.2em] uppercase text-[#D90429]",
+      "rules": [
+        "DO NOT use Inter, Roboto, or generic sans for headings.",
+        "Use tight tracking on large headings.",
+        "Limit H1 size to text-6xl maximum.",
+        "Ensure contrast on hover and active states."
+      ]
+    },
+    "spacing_and_layout": {
+      "scale": "Tailwind standard, prioritize generous spacing (p-8, p-12, p-16).",
+      "grid_mode": "Grid Borders (The Technical Look) for Dashboards/Services; Bento Grid for About section.",
+      "hero_overlay": "bg-gradient-to-r from-white/90 via-white/70 to-transparent for light mode hero.",
+      "container_padding": "px-6 md:px-12 lg:px-24 py-20"
+    },
+    "surfaces": {
+      "cards": "Flat background (surface), 1px subtle border (border-border), no massive shadow. Hover: slight lift (-translate-y-1) and subtle shadow.",
+      "navigation": "Crystal Glass: backdrop-blur-xl bg-white/80, 1px bottom border-white/40.",
+      "dashboard": "Sharp edges or subtle roundness (max 8px). Cardless, rectangular, dense styles."
+    }
+  },
+  "key_sections": {
+    "hero": {
+      "type": "Interactive 3D + Content",
+      "content": "L'Excellence Logistique et Douanière. Transport, Transit et Dédouanement.",
+      "visuals": "React Three Fiber canvas taking up the right side or background. Use Box primitives styled as shipping containers (red, blue, white) floating/animating with parallax, or a 3D truck representation if possible.",
+      "cta": "Demander un devis (Primary), Découvrir nos services (Secondary)"
+    },
+    "about": {
+      "type": "Bento Grid Layout",
+      "content": "Fondée en 2019, GLS est une agence en douane experte. Focus sur la précision et la rapidité.",
+      "visuals": "Mix text cards with imagery of customs professionals scanning boxes."
+    },
+    "services": {
+      "type": "Technical Grid",
+      "categories": ["Import/Export", "Dédouanement", "Transport Logistique"],
+      "visuals": "Use lucide-react icons (Ship, Truck, ClipboardCheck)."
+    },
+    "sectors": {
+      "type": "Cards / Overlapping Sections",
+      "categories": ["Mines", "Automobile", "Pharmaceutique", "Commercial"],
+      "visuals": "Rich imagery per sector. Hover states reveal details."
+    },
+    "partners": {
+      "type": "Marquee",
+      "content": "AECL, SicoMine, Jambo Mart, Malibu Cars.",
+      "visuals": "Since generic logos lack authenticity, use clean typographic treatments with Lucide icons (e.g., Pickaxe for SicoMine, Car for Malibu Cars) in a slow, elegant marquee."
+    },
+    "contact": {
+      "type": "Form + Backend Logic",
+      "fields": ["Nom", "Email", "Téléphone", "Message"],
+      "visuals": "Clean Shadcn form. Submissions must be saved to the database."
+    },
+    "admin_dashboard": {
+      "type": "Data Table Layout",
+      "content": "Tableau de bord admin pour voir les messages de contact.",
+      "visuals": "Dense, functional UI. No glassmorphism. Solid white/grey with sharp data tables."
+    }
+  },
+  "media_urls": {
+    "hero_background": {
+      "url": "https://images.unsplash.com/photo-1670121180530-cfcba4438038?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjA2MDV8MHwxfHNlYXJjaHwxfHxjYXJnbyUyMHBvcnQlMjBzaGlwcGluZyUyMGNvbnRhaW5lcnN8ZW58MHx8fHwxNzgyODM5NzE5fDA&ixlib=rb-4.1.0&q=85",
+      "description": "Large cargo ship at a dock (use for parallax backgrounds or sector imagery)"
+    },
+    "logistics_worker_1": {
+      "url": "https://images.unsplash.com/photo-1781559818983-4180d744416a?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjA1NzB8MHwxfHNlYXJjaHwyfHxsb2dpc3RpY3MlMjB3b3JrZXIlMjB3YXJlaG91c2V8ZW58MHx8fHwxNzgyODM5NzE5fDA&ixlib=rb-4.1.0&q=85",
+      "description": "Warehouse professional with tablet (use for About section)"
+    },
+    "logistics_worker_2": {
+      "url": "https://images.unsplash.com/photo-1740914994162-0b2a49280aeb?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjA1NzB8MHwxfHNlYXJjaHwxfHxsb2dpc3RpY3MlMjB3b3JrZXIlMjB3YXJlaG91c2V8ZW58MHx8fHwxNzgyODM5NzE5fDA&ixlib=rb-4.1.0&q=85",
+      "description": "Worker scanning/ladder (use for About or Services section)"
+    },
+    "port_cranes": {
+      "url": "https://images.unsplash.com/photo-1691591765923-3bd6f12f4209?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjA2MDV8MHwxfHNlYXJjaHwzfHxjYXJnbyUyMHBvcnQlMjBzaGlwcGluZyUyMGNvbnRhaW5lcnN8ZW58MHx8fHwxNzgyODM5NzE5fDA&ixlib=rb-4.1.0&q=85",
+      "description": "Cargo ship with cranes (use for Hero fallback or Parallax section)"
+    }
+  },
+  "technical_instructions": {
+    "files": "Use .js and .jsx extensions exclusively. Do not use .tsx or .ts.",
+    "styling": "Tailwind CSS + raw HTML structural elements for creative layouts. Use Shadcn exclusively for complex interactive components (forms, dialogs, dropdowns).",
+    "animations": "Framer Motion for scroll reveals, micro-interactions, and layout transitions.",
+    "3d_implementation": "Use @react-three/fiber and @react-three/drei. Create a component `ShippingContainers3D.jsx`. Use `Box` geometries scaled like containers (e.g., args={[2, 1, 1]}). Apply standard materials in brand colors (#002D62, #FFFFFF, #D90429). Add `Environment` and `Float` from Drei to make them look premium and animated.",
+    "icons": "lucide-react",
+    "testing": "All interactive elements MUST have role-based data-testid attributes (e.g., data-testid='contact-submit-button').",
+    "scroll": "Install and configure @studio-freight/lenis for smooth scrolling.",
+    "database": "Setup a simple local storage or sqlite via Node backend (or simulated via an API route in Vite if purely frontend context, but user asks for messages saved to database. Implement a basic Express API or mock standard REST calls in the frontend if backend not explicitly provided, but ensure the admin dashboard consumes this data)."
+  }
+}
