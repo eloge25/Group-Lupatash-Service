@@ -18,6 +18,7 @@ export default function AdminDashboard() {
   const [loading, setLoading] = useState(true);
   const [query, setQuery] = useState("");
   const [selected, setSelected] = useState(null);
+  const [loggingOut, setLoggingOut] = useState(false);
 
   const headers = { Authorization: `Bearer ${token}` };
 
@@ -39,9 +40,10 @@ export default function AdminDashboard() {
   }, [token]);
 
   useEffect(() => {
+    if (loggingOut) return;
     if (user === false) navigate("/login");
     else if (user) load();
-  }, [user, navigate, load]);
+  }, [user, navigate, load, loggingOut]);
 
   const openMsg = async (msg) => {
     setSelected(msg);
@@ -83,7 +85,7 @@ export default function AdminDashboard() {
           <div className="flex items-center gap-4">
             <span className="text-sm text-slate-300 hidden sm:block">{user?.email}</span>
             <button
-              onClick={() => { logout(); navigate("/"); }}
+              onClick={() => { setLoggingOut(true); logout(); navigate("/"); }}
               data-testid="admin-logout"
               className="inline-flex items-center gap-2 bg-white/10 hover:bg-gls-red px-4 py-2 rounded-lg text-sm font-semibold transition-colors"
             >
