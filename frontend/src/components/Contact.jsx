@@ -66,6 +66,20 @@ export default function Contact() {
                 </div>
               ))}
             </div>
+
+            {/* Google Maps */}
+            <div className="mt-8 rounded-2xl overflow-hidden border border-gls-border shadow-sm" data-testid="contact-map">
+              <iframe
+                title="Localisation GLS"
+                src={`https://www.google.com/maps?q=${encodeURIComponent(COMPANY.address)}&output=embed`}
+                width="100%"
+                height="280"
+                style={{ border: 0 }}
+                loading="lazy"
+                referrerPolicy="no-referrer-when-downgrade"
+                allowFullScreen
+              />
+            </div>
           </motion.div>
 
           {/* Form */}
