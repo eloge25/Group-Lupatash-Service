@@ -1,14 +1,15 @@
 export const COMPANY = {
-  name: "Group Lupatash Service",
+  name: "Groupe Lupatash Service",
   short: "GLS",
-  legal: "Group Lupatash Service SARL",
+  legal: "Groupe Lupatash Service SARL",
   tagline: "Agence en Douane",
   phone: "+243 975 007 535",
-  email: "contact@gls-douane.com",
+  email: "lupatashservicegls@gmail.com",
   address: "69B avenue Maniema, Lubumbashi, RDC",
+  addressKinshasa: "Av. du Commerce, Local 6/A, Galerie du 30 Juin, C/Gombe, Kinshasa, RDC",
   founded: 2019,
-  logoDark: "https://static.prod-images.emergentagent.com/jobs/b362ee67-614c-4e96-89b3-1124ae3c1646/images/3e79975b59097cc93ccc03c761530d0e0cc9674f76f07a3634a6dc44f9c6b4b8.png",
-  logoWhite: "https://static.prod-images.emergentagent.com/jobs/b362ee67-614c-4e96-89b3-1124ae3c1646/images/b5c3042c29668e9b32f67a1eeec883151b05b491c12812b218c1e069c325d667.png",
+  logoDark: "https://static.prod-images.emergentagent.com/jobs/b362ee67-614c-4e96-89b3-1124ae3c1646/images/0acfa2f590d3b8ce55da8a479f931182663c84a9e08649605542ec950f108bb4.png",
+  logoWhite: "https://static.prod-images.emergentagent.com/jobs/b362ee67-614c-4e96-89b3-1124ae3c1646/images/56da566692bf41bc9ffba07363bd1a540dfbdecbf96fc8927fd40869bcbf8936.png",
 };
 
 export const IMAGES = {

@@ -47,6 +47,9 @@ export default function Footer() {
             <div className="flex items-start gap-2 text-sm text-slate-400 mt-3">
               <MapPin size={16} className="mt-0.5 shrink-0" /> {COMPANY.address}
             </div>
+            <div className="flex items-start gap-2 text-sm text-slate-400 mt-2">
+              <MapPin size={16} className="mt-0.5 shrink-0" /> {COMPANY.addressKinshasa}
+            </div>
             <a href="#contact" className="mt-5 inline-flex items-center gap-1.5 bg-gls-red text-white px-5 py-2.5 rounded-full text-sm font-bold hover:bg-white hover:text-gls-navy transition-colors">
               Demander un devis <ArrowUpRight size={16} />
             </a>

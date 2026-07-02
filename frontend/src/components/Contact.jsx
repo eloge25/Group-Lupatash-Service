@@ -53,7 +53,8 @@ export default function Contact() {
               {[
                 { icon: Phone, label: "Téléphone", value: COMPANY.phone },
                 { icon: Mail, label: "Email", value: COMPANY.email },
-                { icon: MapPin, label: "Adresse", value: COMPANY.address },
+                { icon: MapPin, label: "Agence Lubumbashi", value: COMPANY.address },
+                { icon: MapPin, label: "Agence Kinshasa", value: COMPANY.addressKinshasa },
               ].map((c) => (
                 <div key={c.label} className="flex items-center gap-4">
                   <div className="w-12 h-12 rounded-xl bg-gls-navy flex items-center justify-center shrink-0">
@@ -67,18 +68,28 @@ export default function Contact() {
               ))}
             </div>
 
-            {/* Google Maps */}
-            <div className="mt-8 rounded-2xl overflow-hidden border border-gls-border shadow-sm" data-testid="contact-map">
-              <iframe
-                title="Localisation GLS"
-                src={`https://www.google.com/maps?q=${encodeURIComponent(COMPANY.address)}&output=embed`}
-                width="100%"
-                height="280"
-                style={{ border: 0 }}
-                loading="lazy"
-                referrerPolicy="no-referrer-when-downgrade"
-                allowFullScreen
-              />
+            {/* Google Maps - deux agences */}
+            <div className="mt-8 grid sm:grid-cols-2 gap-4" data-testid="contact-map">
+              {[
+                { label: "Lubumbashi", addr: COMPANY.address },
+                { label: "Kinshasa", addr: COMPANY.addressKinshasa },
+              ].map((m) => (
+                <div key={m.label} className="rounded-2xl overflow-hidden border border-gls-border shadow-sm">
+                  <div className="bg-gls-navy text-white text-xs font-bold tracking-wide uppercase px-4 py-2">
+                    Agence {m.label}
+                  </div>
+                  <iframe
+                    title={`Localisation GLS ${m.label}`}
+                    src={`https://www.google.com/maps?q=${encodeURIComponent(m.addr)}&output=embed`}
+                    width="100%"
+                    height="220"
+                    style={{ border: 0 }}
+                    loading="lazy"
+                    referrerPolicy="no-referrer-when-downgrade"
+                    allowFullScreen
+                  />
+                </div>
+              ))}
             </div>
           </motion.div>
 
