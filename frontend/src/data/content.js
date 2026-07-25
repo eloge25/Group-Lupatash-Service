@@ -8,8 +8,8 @@ export const COMPANY = {
   address: "69B avenue Maniema, Lubumbashi, RDC",
   addressKinshasa: "Av. du Commerce, Local 6/A, Galerie du 30 Juin, C/Gombe, Kinshasa, RDC",
   founded: 2019,
-  logoDark: "https://static.prod-images.emergentagent.com/jobs/b362ee67-614c-4e96-89b3-1124ae3c1646/images/9b56945a764454abf85222b509f18c9223eb7cb1d490da57edc75fbc06ecffe5.jpeg",
-  logoWhite: "https://static.prod-images.emergentagent.com/jobs/b362ee67-614c-4e96-89b3-1124ae3c1646/images/9b56945a764454abf85222b509f18c9223eb7cb1d490da57edc75fbc06ecffe5.jpeg",
+  logoDark: "https://static.prod-images.emergentagent.com/jobs/b362ee67-614c-4e96-89b3-1124ae3c1646/images/3d3856456f97c03e915bc8c2c13976454a275a878a089ae91ada37223e838dbb.jpeg",
+  logoWhite: "https://static.prod-images.emergentagent.com/jobs/b362ee67-614c-4e96-89b3-1124ae3c1646/images/4446ece632ed568ab34419889b3df0fa0ca756a62f888c64b26d7b2437a79113.jpeg",
 };
 
 export const IMAGES = {

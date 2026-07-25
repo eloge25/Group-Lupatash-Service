@@ -79,7 +79,7 @@ export default function AdminDashboard() {
       <header className="bg-gls-navy text-white">
         <div className="max-w-7xl mx-auto px-6 lg:px-10 h-16 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <img src={COMPANY.logoWhite} alt="GLS" className="h-9 w-auto object-contain bg-white rounded px-1.5 py-0.5" />
+            <img src={COMPANY.logoWhite} alt="GLS" className="h-9 w-auto object-contain" />
             <span className="text-sm font-semibold border-l border-white/20 pl-3">Tableau de bord</span>
           </div>
           <div className="flex items-center gap-4">
