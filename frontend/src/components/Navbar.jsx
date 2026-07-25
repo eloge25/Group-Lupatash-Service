@@ -26,9 +26,9 @@ export default function Navbar() {
       <div className="max-w-7xl mx-auto px-6 lg:px-10 flex items-center justify-between h-20">
         <a href="#accueil" className="flex items-center gap-3" data-testid="nav-logo">
           <img
-            src={scrolled ? COMPANY.logoDark : COMPANY.logoWhite}
+            src={COMPANY.logoDark}
             alt="GLS"
-            className="h-11 w-auto object-contain"
+            className="h-12 w-auto object-contain bg-white rounded-lg px-2 py-1"
           />
         </a>
 
