@@ -8,8 +8,7 @@ export const COMPANY = {
   address: "69B avenue Maniema, Lubumbashi, RDC",
   addressKinshasa: "Av. du Commerce, Local 6/A, Galerie du 30 Juin, C/Gombe, Kinshasa, RDC",
   founded: 2019,
-  logoDark: "https://static.prod-images.emergentagent.com/jobs/b362ee67-614c-4e96-89b3-1124ae3c1646/images/3d3856456f97c03e915bc8c2c13976454a275a878a089ae91ada37223e838dbb.jpeg",
-  logoWhite: "https://static.prod-images.emergentagent.com/jobs/b362ee67-614c-4e96-89b3-1124ae3c1646/images/4446ece632ed568ab34419889b3df0fa0ca756a62f888c64b26d7b2437a79113.jpeg",
+  logo: "https://customer-assets-0z36b82j.emergentagent.net/job_import-export-gls/artifacts/2a3rpe8k_GLS.jpg",
 };
 
 export const IMAGES = {
@@ -101,11 +100,21 @@ export const STATS = [
   { value: "100%", label: "Conformité douanière" },
 ];
 
+export const TEAM = [
+  {
+    name: "Mme Lukenge Pataoli Asha Konde",
+    role: "Directrice Générale",
+    photo: "https://customer-assets-0z36b82j.emergentagent.net/job_import-export-gls/artifacts/p8uu6fvc_ed52cb72-17be-4b2c-849f-1b5e81563b02.JPG",
+    desc: "À la tête du Groupe Lupatash Service depuis sa création, elle pilote la vision stratégique de l'agence et veille à l'excellence de chaque opération douanière.",
+  },
+];
+
 export const NAV_LINKS = [
   { label: "Accueil", href: "#accueil" },
   { label: "À propos", href: "#apropos" },
   { label: "Services", href: "#services" },
   { label: "Secteurs", href: "#secteurs" },
+  { label: "Équipe", href: "#equipe" },
   { label: "Partenaires", href: "#partenaires" },
   { label: "Contact", href: "#contact" },
 ];

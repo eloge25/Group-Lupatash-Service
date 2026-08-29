@@ -34,7 +34,7 @@ export default function Login() {
           <ArrowLeft size={16} /> Retour au site
         </Link>
         <div className="bg-white rounded-2xl p-8 lg:p-10 shadow-2xl">
-          <img src={COMPANY.logoDark} alt="GLS" className="h-12 w-auto object-contain mx-auto" />
+          <img src={COMPANY.logo} alt="GLS" className="h-14 w-auto object-contain mx-auto" />
           <h1 className="mt-6 text-center font-display text-2xl font-bold text-gls-navy">Espace administrateur</h1>
           <p className="text-center text-sm text-gls-muted mt-1">Connectez-vous pour gérer les messages</p>
 

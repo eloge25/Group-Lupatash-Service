@@ -25,11 +25,9 @@ export default function Navbar() {
     >
       <div className="max-w-7xl mx-auto px-6 lg:px-10 flex items-center justify-between h-20">
         <a href="#accueil" className="flex items-center gap-3" data-testid="nav-logo">
-          <img
-            src={scrolled ? COMPANY.logoDark : COMPANY.logoWhite}
-            alt="GLS"
-            className="h-12 w-auto object-contain"
-          />
+          <span className={`inline-flex items-center rounded-lg px-2 py-1 transition-colors ${scrolled ? "bg-transparent" : "bg-white/95 shadow-sm"}`}>
+            <img src={COMPANY.logo} alt="GLS" className="h-11 w-auto object-contain" />
+          </span>
         </a>
 
         <nav className="hidden lg:flex items-center gap-9">

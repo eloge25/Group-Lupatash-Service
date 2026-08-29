@@ -4,6 +4,7 @@ import Hero from "../components/Hero";
 import About from "../components/About";
 import Services from "../components/Services";
 import Sectors from "../components/Sectors";
+import Team from "../components/Team";
 import Partners from "../components/Partners";
 import Contact from "../components/Contact";
 import Footer from "../components/Footer";
@@ -16,6 +17,7 @@ export default function HomePage() {
       <About />
       <Services />
       <Sectors />
+      <Team />
       <Partners />
       <Contact />
       <Footer />

@@ -39,3 +39,8 @@ Site web 3D en français pour la société d'import/export et agence en douane "
 ## Next Tasks
 - Collecter logo officiel + coordonnées réelles auprès du client
 - Ajouter l'envoi d'email sur nouveau message si souhaité
+
+## Mise à jour (juin 2026)
+- CORRIGÉ (P0): vrai logo GLS.jpg de l'utilisateur restauré partout (Navbar, Footer, Login, AdminDashboard) via clé unique COMPANY.logo, affiché dans une pastille blanche arrondie sur fonds sombres (aucune génération IA).
+- AJOUT: Section "Équipe" (#equipe) + lien navbar. Membre: Mme Lukenge Pataoli Asha Konde, Directrice Générale, avec photo fournie. Tableau TEAM dans content.js prêt à recevoir les autres membres (promis par l'utilisateur "demain").
+- Fichiers: /app/frontend/src/components/Team.jsx, data/content.js, HomePage.jsx
