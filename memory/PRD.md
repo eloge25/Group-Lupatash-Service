@@ -44,3 +44,11 @@ Site web 3D en français pour la société d'import/export et agence en douane "
 - CORRIGÉ (P0): vrai logo GLS.jpg de l'utilisateur restauré partout (Navbar, Footer, Login, AdminDashboard) via clé unique COMPANY.logo, affiché dans une pastille blanche arrondie sur fonds sombres (aucune génération IA).
 - AJOUT: Section "Équipe" (#equipe) + lien navbar. Membre: Mme Lukenge Pataoli Asha Konde, Directrice Générale, avec photo fournie. Tableau TEAM dans content.js prêt à recevoir les autres membres (promis par l'utilisateur "demain").
 - Fichiers: /app/frontend/src/components/Team.jsx, data/content.js, HomePage.jsx
+
+## Mise à jour 2 (juin 2026)
+- Logo incrusté: fond blanc supprimé via PIL -> /app/frontend/public/logo-gls.png (transparent), affiché avec drop-shadow blanc sur fonds sombres. Plus aucune pastille blanche.
+- Bouton WhatsApp flottant (wa.me/243975007535) sur la page d'accueil (WhatsAppButton.jsx).
+- Suivi de dossier: backend /api/dossiers (CRUD protégé, référence auto GLS-YYYY-XXXX, historique) + /api/track/{ref} public. Section #suivi (Tracking.jsx) avec timeline 6 étapes. Onglet "Dossiers" dans le dashboard admin (components/admin/DossiersPanel.jsx). Statuts: recu/documents/declaration/liquidation/libere/livre.
+- Témoignages: section #temoignages (Testimonials.jsx) avec SicoMine, Malibu Cars, Jambo Mart, AECL.
+- Nav: ajout lien "Suivi". Testé: iteration_4.json — 100% backend (22/22) et frontend.
+- Dossier démo en base: GLS-2026-JB57 (Test Client / SicoMine, statut declaration).

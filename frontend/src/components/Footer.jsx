@@ -9,9 +9,11 @@ export default function Footer() {
       <div className="relative z-10 max-w-7xl mx-auto px-6 lg:px-10 py-16">
         <div className="grid md:grid-cols-4 gap-10">
           <div className="md:col-span-1">
-            <span className="inline-flex items-center bg-white rounded-lg px-2.5 py-1.5">
-              <img src={COMPANY.logo} alt="GLS" className="h-12 w-auto object-contain" />
-            </span>
+            <img
+              src={COMPANY.logo}
+              alt="GLS"
+              className="h-16 w-auto object-contain [filter:drop-shadow(0_0_10px_rgba(255,255,255,0.5))_brightness(1.1)]"
+            />
             <p className="mt-5 text-sm leading-relaxed text-slate-400">
               {COMPANY.legal} — Agence en douane spécialisée dans le transport, le transit et le
               dédouanement depuis {COMPANY.founded}.

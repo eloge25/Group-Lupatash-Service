@@ -6,8 +6,11 @@ import Services from "../components/Services";
 import Sectors from "../components/Sectors";
 import Team from "../components/Team";
 import Partners from "../components/Partners";
+import Testimonials from "../components/Testimonials";
+import Tracking from "../components/Tracking";
 import Contact from "../components/Contact";
 import Footer from "../components/Footer";
+import WhatsAppButton from "../components/WhatsAppButton";
 
 export default function HomePage() {
   return (
@@ -19,8 +22,11 @@ export default function HomePage() {
       <Sectors />
       <Team />
       <Partners />
+      <Testimonials />
+      <Tracking />
       <Contact />
       <Footer />
+      <WhatsAppButton />
     </div>
   );
 }

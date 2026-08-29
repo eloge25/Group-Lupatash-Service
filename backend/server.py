@@ -15,6 +15,8 @@ from bson import ObjectId
 import logging
 import bcrypt
 import jwt
+import secrets
+import string
 
 mongo_url = os.environ['MONGO_URL']
 client = AsyncIOMotorClient(mongo_url)
@@ -100,6 +102,46 @@ class ContactMessage(BaseModel):
     created_at: str
 
 
+DOSSIER_STATUSES = ["recu", "documents", "declaration", "liquidation", "libere", "livre"]
+
+
+class DossierCreate(BaseModel):
+    client_name: str
+    company: Optional[str] = ""
+    description: Optional[str] = ""
+    origin: Optional[str] = ""
+    destination: Optional[str] = ""
+
+
+class DossierUpdate(BaseModel):
+    status: str
+    note: Optional[str] = ""
+
+
+def serialize_dossier(d: dict) -> dict:
+    return {
+        "id": str(d["_id"]),
+        "reference": d["reference"],
+        "client_name": d.get("client_name", ""),
+        "company": d.get("company", ""),
+        "description": d.get("description", ""),
+        "origin": d.get("origin", ""),
+        "destination": d.get("destination", ""),
+        "status": d.get("status", "recu"),
+        "history": d.get("history", []),
+        "created_at": d.get("created_at", ""),
+        "updated_at": d.get("updated_at", ""),
+    }
+
+
+async def generate_reference() -> str:
+    while True:
+        suffix = "".join(secrets.choice(string.ascii_uppercase + string.digits) for _ in range(4))
+        ref = f"GLS-{datetime.now(timezone.utc).year}-{suffix}"
+        if not await db.dossiers.find_one({"reference": ref}):
+            return ref
+
+
 # ---------- Auth routes ----------
 @api_router.post("/auth/login")
 async def login(data: LoginInput):
@@ -164,6 +206,60 @@ async def stats(current_user: dict = Depends(get_current_user)):
     total = await db.contacts.count_documents({})
     unread = await db.contacts.count_documents({"read": False})
     return {"total": total, "unread": unread}
+
+
+# ---------- Dossier routes ----------
+@api_router.post("/dossiers")
+async def create_dossier(data: DossierCreate, current_user: dict = Depends(get_current_user)):
+    now = datetime.now(timezone.utc).isoformat()
+    doc = data.model_dump()
+    doc["reference"] = await generate_reference()
+    doc["status"] = "recu"
+    doc["history"] = [{"status": "recu", "note": "Dossier créé et enregistré", "date": now}]
+    doc["created_at"] = now
+    doc["updated_at"] = now
+    await db.dossiers.insert_one(doc)
+    return serialize_dossier(doc)
+
+
+@api_router.get("/dossiers")
+async def list_dossiers(current_user: dict = Depends(get_current_user)):
+    dossiers = await db.dossiers.find().sort("created_at", -1).to_list(1000)
+    return [serialize_dossier(d) for d in dossiers]
+
+
+@api_router.patch("/dossiers/{dossier_id}")
+async def update_dossier(dossier_id: str, data: DossierUpdate, current_user: dict = Depends(get_current_user)):
+    if data.status not in DOSSIER_STATUSES:
+        raise HTTPException(status_code=400, detail="Statut invalide")
+    now = datetime.now(timezone.utc).isoformat()
+    result = await db.dossiers.find_one_and_update(
+        {"_id": ObjectId(dossier_id)},
+        {
+            "$set": {"status": data.status, "updated_at": now},
+            "$push": {"history": {"status": data.status, "note": data.note or "", "date": now}},
+        },
+        return_document=True,
+    )
+    if not result:
+        raise HTTPException(status_code=404, detail="Dossier introuvable")
+    return serialize_dossier(result)
+
+
+@api_router.delete("/dossiers/{dossier_id}")
+async def delete_dossier(dossier_id: str, current_user: dict = Depends(get_current_user)):
+    await db.dossiers.delete_one({"_id": ObjectId(dossier_id)})
+    return {"success": True}
+
+
+@api_router.get("/track/{reference}")
+async def track_dossier(reference: str):
+    dossier = await db.dossiers.find_one({"reference": reference.strip().upper()})
+    if not dossier:
+        raise HTTPException(status_code=404, detail="Aucun dossier trouvé avec cette référence")
+    d = serialize_dossier(dossier)
+    d.pop("id", None)
+    return d
 
 
 @api_router.get("/")

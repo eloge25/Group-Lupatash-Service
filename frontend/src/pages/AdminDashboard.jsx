@@ -3,10 +3,11 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { toast } from "sonner";
 import {
-  LogOut, Mail, Phone, Building2, Trash2, Inbox, MailOpen, Search, RefreshCw, CheckCheck,
+  LogOut, Mail, Phone, Building2, Trash2, Inbox, MailOpen, Search, RefreshCw, CheckCheck, FolderOpen,
 } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import { COMPANY } from "../data/content";
+import DossiersPanel from "../components/admin/DossiersPanel";
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
@@ -19,6 +20,7 @@ export default function AdminDashboard() {
   const [query, setQuery] = useState("");
   const [selected, setSelected] = useState(null);
   const [loggingOut, setLoggingOut] = useState(false);
+  const [tab, setTab] = useState("messages");
 
   const headers = { Authorization: `Bearer ${token}` };
 
@@ -79,9 +81,11 @@ export default function AdminDashboard() {
       <header className="bg-gls-navy text-white">
         <div className="max-w-7xl mx-auto px-6 lg:px-10 h-16 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <span className="inline-flex items-center bg-white rounded-md px-1.5 py-1">
-              <img src={COMPANY.logo} alt="GLS" className="h-8 w-auto object-contain" />
-            </span>
+            <img
+              src={COMPANY.logo}
+              alt="GLS"
+              className="h-10 w-auto object-contain [filter:drop-shadow(0_0_8px_rgba(255,255,255,0.5))_brightness(1.1)]"
+            />
             <span className="text-sm font-semibold border-l border-white/20 pl-3">Tableau de bord</span>
           </div>
           <div className="flex items-center gap-4">
@@ -98,6 +102,32 @@ export default function AdminDashboard() {
       </header>
 
       <main className="max-w-7xl mx-auto px-6 lg:px-10 py-8">
+        {/* Tabs */}
+        <div className="flex gap-2 mb-8">
+          <button
+            onClick={() => setTab("messages")}
+            data-testid="admin-tab-messages"
+            className={`inline-flex items-center gap-2 px-5 py-2.5 rounded-full text-sm font-bold transition-colors ${
+              tab === "messages" ? "bg-gls-navy text-white" : "bg-white border border-gls-border text-gls-navy hover:border-gls-navy"
+            }`}
+          >
+            <Inbox size={16} /> Messages
+          </button>
+          <button
+            onClick={() => setTab("dossiers")}
+            data-testid="admin-tab-dossiers"
+            className={`inline-flex items-center gap-2 px-5 py-2.5 rounded-full text-sm font-bold transition-colors ${
+              tab === "dossiers" ? "bg-gls-navy text-white" : "bg-white border border-gls-border text-gls-navy hover:border-gls-navy"
+            }`}
+          >
+            <FolderOpen size={16} /> Dossiers
+          </button>
+        </div>
+
+        {tab === "dossiers" ? (
+          <DossiersPanel token={token} />
+        ) : (
+        <>
         {/* Stats */}
         <div className="grid grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
           <StatCard icon={Inbox} label="Total messages" value={stats.total} testid="stat-total" />
@@ -203,6 +233,8 @@ export default function AdminDashboard() {
             )}
           </div>
         </div>
+        </>
+        )}
       </main>
     </div>
   );

@@ -8,7 +8,8 @@ export const COMPANY = {
   address: "69B avenue Maniema, Lubumbashi, RDC",
   addressKinshasa: "Av. du Commerce, Local 6/A, Galerie du 30 Juin, C/Gombe, Kinshasa, RDC",
   founded: 2019,
-  logo: "https://customer-assets-0z36b82j.emergentagent.net/job_import-export-gls/artifacts/2a3rpe8k_GLS.jpg",
+  logo: "/logo-gls.png",
+  whatsapp: "243975007535",
 };
 
 export const IMAGES = {
@@ -109,6 +110,46 @@ export const TEAM = [
   },
 ];
 
+export const TESTIMONIALS = [
+  {
+    company: "SicoMine",
+    author: "Direction Logistique",
+    icon: "Pickaxe",
+    quote:
+      "GLS gère le dédouanement de nos équipements miniers avec une rigueur exemplaire. Les délais sont respectés et la conformité est totale, même sur les cargaisons les plus complexes.",
+  },
+  {
+    company: "Malibu Cars",
+    author: "Service Import",
+    icon: "Car",
+    quote:
+      "Pour l'importation de nos véhicules, GLS est un partenaire de confiance depuis des années. Transit rapide, documentation impeccable et un suivi permanent de chaque dossier.",
+  },
+  {
+    company: "Jambo Mart",
+    author: "Responsable Approvisionnement",
+    icon: "ShoppingCart",
+    quote:
+      "Leur équipe connaît parfaitement les procédures douanières congolaises. Nos marchandises commerciales arrivent en rayon sans retard, une vraie tranquillité d'esprit.",
+  },
+  {
+    company: "AECL",
+    author: "Direction des Opérations",
+    icon: "Building2",
+    quote:
+      "Un professionnalisme rare dans le secteur. GLS anticipe les contraintes réglementaires et nous propose toujours la solution de transit la plus efficace.",
+  },
+];
+
+export const DOSSIER_STATUSES = [
+  { code: "recu", label: "Dossier reçu" },
+  { code: "documents", label: "Vérification des documents" },
+  { code: "declaration", label: "Déclaration en douane" },
+  { code: "liquidation", label: "Liquidation & paiement" },
+  { code: "libere", label: "Marchandise libérée" },
+  { code: "livre", label: "Livré" },
+];
+
 export const NAV_LINKS = [
   { label: "Accueil", href: "#accueil" },
   { label: "À propos", href: "#apropos" },
@@ -116,5 +157,6 @@ export const NAV_LINKS = [
   { label: "Secteurs", href: "#secteurs" },
   { label: "Équipe", href: "#equipe" },
   { label: "Partenaires", href: "#partenaires" },
+  { label: "Suivi", href: "#suivi" },
   { label: "Contact", href: "#contact" },
 ];
