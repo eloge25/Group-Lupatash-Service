@@ -52,3 +52,10 @@ Site web 3D en français pour la société d'import/export et agence en douane "
 - Témoignages: section #temoignages (Testimonials.jsx) avec SicoMine, Malibu Cars, Jambo Mart, AECL.
 - Nav: ajout lien "Suivi". Testé: iteration_4.json — 100% backend (22/22) et frontend.
 - Dossier démo en base: GLS-2026-JB57 (Test Client / SicoMine, statut declaration).
+
+## Audit de sécurité + durcissement (juin 2026)
+Audit: CONDITIONAL PASS -> correctifs appliqués et testés (iteration_5.json, 34/34 backend, frontend 100%):
+- SEC-001: références dossiers passées de 4 à 8 caractères (GLS-YYYY-XXXXXXXX, 36^8 combinaisons) + rate limit /api/track (15/min/IP) -> énumération infaisable. Ancien dossier démo supprimé, nouveau: GLS-2026-RIAYO3J8.
+- SEC-002: parse_oid() -> 404 propre au lieu de 500 sur ObjectId invalide (dossiers + messages).
+- Brute force login: verrouillage 15 min après 5 échecs/IP + 10 req/min. Contact: 5/5min/IP + max_length Pydantic sur tous les champs. JWT: 24h au lieu de 7j. CORS: allow_credentials=False. Seed admin: fail-fast sur env manquantes, create-only (plus de reset au boot). .gitignore: .env ajouté. Index unique sur dossiers.reference.
+- Rate limiting en mémoire par IP (X-Forwarded-For 1er hop) — suffisant mono-pod; Redis si scaling horizontal (backlog P2).

@@ -46,7 +46,7 @@ export default function Tracking() {
             Suivez votre dédouanement en temps réel
           </h2>
           <p className="mt-4 text-gls-muted max-w-xl">
-            Entrez la référence de votre dossier (fournie par notre équipe, ex. GLS-2026-A1B2) pour
+            Entrez la référence de votre dossier (fournie par notre équipe, ex. GLS-2026-A1B2C3D4) pour
             consulter l'avancement de vos opérations douanières.
           </p>
         </motion.div>
@@ -57,7 +57,7 @@ export default function Tracking() {
             <input
               value={reference}
               onChange={(e) => setReference(e.target.value.toUpperCase())}
-              placeholder="Référence du dossier — ex. GLS-2026-A1B2"
+              placeholder="Référence du dossier — ex. GLS-2026-A1B2C3D4"
               data-testid="tracking-input"
               className="w-full rounded-full border border-gls-border pl-12 pr-4 py-4 text-sm font-semibold tracking-wide focus:border-gls-navy focus:ring-2 focus:ring-gls-navy/10 outline-none uppercase"
             />

@@ -10,7 +10,7 @@ API = f"{BASE_URL}/api"
 ADMIN_EMAIL = "admin@gls-douane.com"
 ADMIN_PASSWORD = "GlsAdmin2019!"
 
-REF_RE = re.compile(r"^GLS-\d{4}-[A-Z0-9]{4}$")
+REF_RE = re.compile(r"^GLS-\d{4}-[A-Z0-9]{8}$")
 
 
 @pytest.fixture(scope="module")

@@ -17,6 +17,8 @@ import bcrypt
 import jwt
 import secrets
 import string
+import time
+from collections import defaultdict
 
 mongo_url = os.environ['MONGO_URL']
 client = AsyncIOMotorClient(mongo_url)
@@ -32,6 +34,33 @@ logger = logging.getLogger(__name__)
 
 # ---------- Helpers ----------
 PyObjectId = Annotated[str, BeforeValidator(str)]
+
+# In-memory rate limiting (per IP, sliding window)
+_rate_buckets = defaultdict(list)
+_failed_logins = defaultdict(list)
+LOGIN_MAX_FAILS = 5
+LOGIN_LOCK_WINDOW = 900
+
+
+def client_ip(request: Request) -> str:
+    fwd = request.headers.get("X-Forwarded-For", "")
+    return fwd.split(",")[0].strip() if fwd else (request.client.host if request.client else "unknown")
+
+
+def check_rate_limit(request: Request, scope: str, max_calls: int, window: int):
+    key = f"{scope}:{client_ip(request)}"
+    now = time.time()
+    _rate_buckets[key] = [t for t in _rate_buckets[key] if now - t < window]
+    if len(_rate_buckets[key]) >= max_calls:
+        raise HTTPException(status_code=429, detail="Trop de requêtes. Veuillez réessayer plus tard.")
+    _rate_buckets[key].append(now)
+
+
+def parse_oid(value: str) -> ObjectId:
+    try:
+        return ObjectId(value)
+    except Exception:
+        raise HTTPException(status_code=404, detail="Ressource introuvable")
 
 
 def hash_password(password: str) -> str:
@@ -50,7 +79,7 @@ def create_access_token(user_id: str, email: str) -> str:
     payload = {
         "sub": user_id,
         "email": email,
-        "exp": datetime.now(timezone.utc) + timedelta(days=7),
+        "exp": datetime.now(timezone.utc) + timedelta(hours=24),
         "type": "access",
     }
     return jwt.encode(payload, get_jwt_secret(), algorithm=JWT_ALGORITHM)
@@ -63,7 +92,7 @@ async def get_current_user(request: Request) -> dict:
         raise HTTPException(status_code=401, detail="Non authentifié")
     try:
         payload = jwt.decode(token, get_jwt_secret(), algorithms=[JWT_ALGORITHM])
-        user = await db.users.find_one({"_id": ObjectId(payload["sub"])})
+        user = await db.users.find_one({"_id": parse_oid(payload["sub"])})
         if not user:
             raise HTTPException(status_code=401, detail="Utilisateur introuvable")
         user["_id"] = str(user["_id"])
@@ -82,12 +111,12 @@ class LoginInput(BaseModel):
 
 
 class ContactCreate(BaseModel):
-    name: str
+    name: str = Field(min_length=1, max_length=200)
     email: EmailStr
-    phone: Optional[str] = ""
-    company: Optional[str] = ""
-    subject: Optional[str] = ""
-    message: str
+    phone: Optional[str] = Field(default="", max_length=50)
+    company: Optional[str] = Field(default="", max_length=200)
+    subject: Optional[str] = Field(default="", max_length=300)
+    message: str = Field(min_length=1, max_length=5000)
 
 
 class ContactMessage(BaseModel):
@@ -106,16 +135,16 @@ DOSSIER_STATUSES = ["recu", "documents", "declaration", "liquidation", "libere",
 
 
 class DossierCreate(BaseModel):
-    client_name: str
-    company: Optional[str] = ""
-    description: Optional[str] = ""
-    origin: Optional[str] = ""
-    destination: Optional[str] = ""
+    client_name: str = Field(min_length=1, max_length=200)
+    company: Optional[str] = Field(default="", max_length=200)
+    description: Optional[str] = Field(default="", max_length=2000)
+    origin: Optional[str] = Field(default="", max_length=200)
+    destination: Optional[str] = Field(default="", max_length=200)
 
 
 class DossierUpdate(BaseModel):
     status: str
-    note: Optional[str] = ""
+    note: Optional[str] = Field(default="", max_length=1000)
 
 
 def serialize_dossier(d: dict) -> dict:
@@ -136,7 +165,7 @@ def serialize_dossier(d: dict) -> dict:
 
 async def generate_reference() -> str:
     while True:
-        suffix = "".join(secrets.choice(string.ascii_uppercase + string.digits) for _ in range(4))
+        suffix = "".join(secrets.choice(string.ascii_uppercase + string.digits) for _ in range(8))
         ref = f"GLS-{datetime.now(timezone.utc).year}-{suffix}"
         if not await db.dossiers.find_one({"reference": ref}):
             return ref
@@ -144,10 +173,18 @@ async def generate_reference() -> str:
 
 # ---------- Auth routes ----------
 @api_router.post("/auth/login")
-async def login(data: LoginInput):
+async def login(data: LoginInput, request: Request):
+    check_rate_limit(request, "login", 10, 60)
+    ip = client_ip(request)
+    now = time.time()
+    _failed_logins[ip] = [t for t in _failed_logins[ip] if now - t < LOGIN_LOCK_WINDOW]
+    if len(_failed_logins[ip]) >= LOGIN_MAX_FAILS:
+        raise HTTPException(status_code=429, detail="Trop de tentatives échouées. Compte temporairement verrouillé, réessayez dans 15 minutes.")
     user = await db.users.find_one({"email": data.email.lower()})
     if not user or not verify_password(data.password, user["password_hash"]):
+        _failed_logins[ip].append(now)
         raise HTTPException(status_code=401, detail="Email ou mot de passe incorrect")
+    _failed_logins[ip] = []
     token = create_access_token(str(user["_id"]), user["email"])
     return {
         "access_token": token,
@@ -162,7 +199,8 @@ async def me(current_user: dict = Depends(get_current_user)):
 
 # ---------- Contact routes ----------
 @api_router.post("/contact")
-async def create_contact(data: ContactCreate):
+async def create_contact(data: ContactCreate, request: Request):
+    check_rate_limit(request, "contact", 5, 300)
     doc = data.model_dump()
     doc["read"] = False
     doc["created_at"] = datetime.now(timezone.utc).isoformat()
@@ -191,13 +229,13 @@ async def list_messages(current_user: dict = Depends(get_current_user)):
 
 @api_router.patch("/contact/messages/{msg_id}/read")
 async def mark_read(msg_id: str, current_user: dict = Depends(get_current_user)):
-    await db.contacts.update_one({"_id": ObjectId(msg_id)}, {"$set": {"read": True}})
+    await db.contacts.update_one({"_id": parse_oid(msg_id)}, {"$set": {"read": True}})
     return {"success": True}
 
 
 @api_router.delete("/contact/messages/{msg_id}")
 async def delete_message(msg_id: str, current_user: dict = Depends(get_current_user)):
-    await db.contacts.delete_one({"_id": ObjectId(msg_id)})
+    await db.contacts.delete_one({"_id": parse_oid(msg_id)})
     return {"success": True}
 
 
@@ -234,7 +272,7 @@ async def update_dossier(dossier_id: str, data: DossierUpdate, current_user: dic
         raise HTTPException(status_code=400, detail="Statut invalide")
     now = datetime.now(timezone.utc).isoformat()
     result = await db.dossiers.find_one_and_update(
-        {"_id": ObjectId(dossier_id)},
+        {"_id": parse_oid(dossier_id)},
         {
             "$set": {"status": data.status, "updated_at": now},
             "$push": {"history": {"status": data.status, "note": data.note or "", "date": now}},
@@ -248,12 +286,13 @@ async def update_dossier(dossier_id: str, data: DossierUpdate, current_user: dic
 
 @api_router.delete("/dossiers/{dossier_id}")
 async def delete_dossier(dossier_id: str, current_user: dict = Depends(get_current_user)):
-    await db.dossiers.delete_one({"_id": ObjectId(dossier_id)})
+    await db.dossiers.delete_one({"_id": parse_oid(dossier_id)})
     return {"success": True}
 
 
 @api_router.get("/track/{reference}")
-async def track_dossier(reference: str):
+async def track_dossier(reference: str, request: Request):
+    check_rate_limit(request, "track", 15, 60)
     dossier = await db.dossiers.find_one({"reference": reference.strip().upper()})
     if not dossier:
         raise HTTPException(status_code=404, detail="Aucun dossier trouvé avec cette référence")
@@ -271,7 +310,7 @@ app.include_router(api_router)
 
 app.add_middleware(
     CORSMiddleware,
-    allow_credentials=True,
+    allow_credentials=False,
     allow_origins=os.environ.get('CORS_ORIGINS', '*').split(','),
     allow_methods=["*"],
     allow_headers=["*"],
@@ -281,8 +320,9 @@ app.add_middleware(
 @app.on_event("startup")
 async def startup():
     await db.users.create_index("email", unique=True)
-    admin_email = os.environ.get("ADMIN_EMAIL", "admin@example.com").lower()
-    admin_password = os.environ.get("ADMIN_PASSWORD", "admin123")
+    await db.dossiers.create_index("reference", unique=True)
+    admin_email = os.environ["ADMIN_EMAIL"].lower()
+    admin_password = os.environ["ADMIN_PASSWORD"]
     existing = await db.users.find_one({"email": admin_email})
     if existing is None:
         await db.users.insert_one({
@@ -293,8 +333,6 @@ async def startup():
             "created_at": datetime.now(timezone.utc).isoformat(),
         })
         logger.info("Admin seeded")
-    elif not verify_password(admin_password, existing["password_hash"]):
-        await db.users.update_one({"email": admin_email}, {"$set": {"password_hash": hash_password(admin_password)}})
 
 
 @app.on_event("shutdown")

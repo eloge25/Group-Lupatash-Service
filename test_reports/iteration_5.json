@@ -1,0 +1,33 @@
+{
+  "summary": "Verified all 5 security-hardening fixes and regressions on backend + frontend. 34/34 pytest cases pass in a single parallel run. Frontend: homepage loads with logo, Équipe / Témoignages / Suivi sections, WhatsApp button (wa.me/243975007535), tracking placeholder now shows new 8-char format (GLS-2026-A1B2C3D4), public tracking of GLS-2026-RIAYO3J8 shows result card with progress steps + history (Durban → Lubumbashi, status declaration), admin login redirects to /admin dashboard with Messages + Dossiers tabs. Backend security: (1) new dossier ref matches ^GLS-\\d{4}-[A-Z0-9]{8}$; (2) /api/track rate-limited: 15 requests OK then 16th=429 with French message; (3) POST /api/contact rate-limited: 5 OK then 6th=429; (4) invalid ObjectId on DELETE /api/dossiers/:id, PATCH /api/dossiers/:id, PATCH /api/contact/messages/:id/read, DELETE /api/contact/messages/:id all return 404 (not 500); (5) POST /api/contact with message>5000 chars = 422; PATCH /api/dossiers note>1000 chars = 422; invalid status = 400. Regression: admin login works, JWT returned, /api/auth/me works, dossier CRUD works, /api/track for RIAYO3J8 returns dossier without 'id' field, unknown ref = 404, protected endpoints = 401 without token. Brute-force: 5 wrong passwords = 401 then 6th = 429 with French lockout message; correct creds after lockout still get 429 (per-IP in-memory). Restarted backend at end to clear in-memory state. Used unique X-Forwarded-For per rate-limit test to avoid cross-test collisions with the ingress IP.",
+  "backend_issues": {"critical": [], "minor": []},
+  "frontend_issues": {"ui_bugs": [], "integration_issues": [], "design_issues": []},
+  "test_report_links": [
+    "/app/backend/tests/backend_test.py",
+    "/app/backend/tests/test_dossiers.py",
+    "/app/backend/tests/test_security.py",
+    "/app/backend/tests/test_zzz_brute.py",
+    "/app/test_reports/pytest/pytest_results.xml"
+  ],
+  "action_items": [],
+  "critical_code_review_comments": [
+    "server.py: rate limiting is in-memory + per-process; if the app is horizontally scaled or restarted, limits reset. For production, migrate to Redis-backed limiter (e.g. slowapi + redis).",
+    "server.py: client_ip trusts X-Forwarded-For blindly and takes the first hop. Behind Kubernetes ingress this is fine, but an attacker can spoof XFF and bypass per-IP limits. Consider validating trusted proxies or using request.client.host when XFF is untrusted.",
+    "server.py: startup event still uses deprecated @app.on_event; consider FastAPI lifespan handler.",
+    "server.py: JWT_SECRET fetched via os.environ['JWT_SECRET'] but not validated at startup — a missing secret only fails on first request. Fail-fast in startup.",
+    "server.py: successful login clears failed-login counter for that IP — good — but there is no upper cap on the size of _rate_buckets/_failed_logins dicts (unbounded memory growth per unique IP). Add periodic pruning.",
+    "DossiersPanel.jsx still uses window.prompt/confirm (blocking, not accessible) — replace with shadcn dialog for better UX.",
+    "CORS is configured with allow_credentials=False AND allow_origins from env defaulting to '*'. Since credentials are not used (Bearer token), this is safe, but consider explicit allowlist in prod."
+  ],
+  "updated_files": [
+    "/app/backend/tests/test_dossiers.py (regex updated to 8-char refs)",
+    "/app/backend/tests/test_security.py (new)",
+    "/app/backend/tests/test_zzz_brute.py (new)"
+  ],
+  "success_rate": {"backend": "100% (34/34)", "frontend": "100%"},
+  "test_credentials": "Admin: admin@gls-douane.com / GlsAdmin2019! (worked)",
+  "seed_data_creation": "Created/cleaned TEST_* dossiers and contacts via pytest fixtures. GLS-2026-RIAYO3J8 demo dossier retained (verified status=declaration, Durban→Lubumbashi).",
+  "retest_needed": false,
+  "main_agent_can_self_test": true,
+  "context_for_next_testing_agent": "Backend test suite in /app/backend/tests/ has 4 files: backend_test.py (auth+contact regression), test_dossiers.py (dossier CRUD + tracking, ref regex now 8-char), test_security.py (all 5 security fixes incl. rate limits and invalid ObjectId), test_zzz_brute.py (login lockout, runs last alphabetically). Rate-limit tests use unique X-Forwarded-For headers to isolate per-IP counters — this works because the code takes the first XFF hop. If you need to run manually, remember: pytest.ini pins -n 2 --dist loadscope; the full run takes ~66s due to the 16-request rate-limit test. After a full run the brute-force test IP (10.99.88.55) is locked for 15 min but the real testing IP is untouched. To reset all in-memory limiter state: `sudo supervisorctl restart backend`."
+}
