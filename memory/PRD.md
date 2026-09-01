@@ -71,3 +71,6 @@ Note: content.js garde COMPANY/IMAGES/SECTORS(images)/TEAM(photo)/PARTNERS/DOSSI
 - Chatbot public bilingue: ChatWidget.jsx (bouton flottant au-dessus de WhatsApp), streaming SSE (POST /api/chat), mémoire multi-tours par session (db.chat_messages, 10 derniers messages réinjectés dans le system prompt), historique restauré au rechargement (sessionStorage 'gls-chat-session' + GET /api/chat/history/{sid}), rate limit 15/min/IP, réponses texte brut (Markdown interdit).
 - Brouillon IA admin: POST /api/admin/draft-reply/{msg_id} (protégé, 10/5min) → DraftReply.jsx dans le détail d'un message (streaming, Copier, mailto pré-rempli, Régénérer).
 - System prompt GLS_KNOWLEDGE dans server.py: faits entreprise, pas de prix/délais, hors-sujet refusé.
+
+## Équipe (juin 2026)
+- Ajout M. Akilimali K. Eloge, Consultant (photo fournie), FR + EN. Équipe = 2 membres (DG + Consultant). Vérifié par capture d'écran.

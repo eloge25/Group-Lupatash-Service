@@ -108,6 +108,12 @@ export const TEAM = [
     photo: "https://customer-assets-0z36b82j.emergentagent.net/job_import-export-gls/artifacts/p8uu6fvc_ed52cb72-17be-4b2c-849f-1b5e81563b02.JPG",
     desc: "À la tête du Groupe Lupatash Service depuis sa création, elle pilote la vision stratégique de l'agence et veille à l'excellence de chaque opération douanière.",
   },
+  {
+    name: "M. Akilimali K. Eloge",
+    role: "Consultant",
+    photo: "https://customer-assets-0z36b82j.emergentagent.net/job_import-export-gls/artifacts/scdvu26s_EC92DDA5-E2A8-4505-998B-1CA4EBBCBB2C.jpg",
+    desc: "Consultant au sein de GLS, il accompagne les clients dans leurs opérations de transit et apporte son expertise sur les procédures douanières et réglementaires.",
+  },
 ];
 
 export const TESTIMONIALS = [

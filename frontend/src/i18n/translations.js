@@ -73,6 +73,11 @@ export const TRANSLATIONS = {
           role: "Directrice Générale",
           desc: "À la tête du Groupe Lupatash Service depuis sa création, elle pilote la vision stratégique de l'agence et veille à l'excellence de chaque opération douanière.",
         },
+        {
+          name: "M. Akilimali K. Eloge",
+          role: "Consultant",
+          desc: "Consultant au sein de GLS, il accompagne les clients dans leurs opérations de transit et apporte son expertise sur les procédures douanières et réglementaires.",
+        },
       ],
     },
     partners: {
@@ -226,6 +231,11 @@ export const TRANSLATIONS = {
           name: "Mrs. Lukenge Pataoli Asha Konde",
           role: "Chief Executive Officer",
           desc: "At the helm of Groupe Lupatash Service since its creation, she drives the agency's strategic vision and ensures the excellence of every customs operation.",
+        },
+        {
+          name: "Mr. Akilimali K. Eloge",
+          role: "Consultant",
+          desc: "As a consultant at GLS, he supports clients throughout their transit operations and brings his expertise in customs and regulatory procedures.",
         },
       ],
     },
