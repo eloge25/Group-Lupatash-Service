@@ -145,6 +145,13 @@ export const TRANSLATIONS = {
       tooltip: "Discutons sur WhatsApp",
       message: "Bonjour GLS, je souhaite obtenir des informations sur vos services de dédouanement.",
     },
+    chat: {
+      title: "Assistant GLS",
+      subtitle: "Propulsé par l'IA — réponses instantanées",
+      welcome: "Bonjour ! 👋 Je suis l'assistant virtuel de GLS. Posez-moi vos questions sur nos services de dédouanement, transport, suivi de dossier ou nos agences.",
+      placeholder: "Votre question...",
+      error: "Désolé, une erreur est survenue. Veuillez réessayer ou nous contacter au +243 975 007 535.",
+    },
   },
   en: {
     nav: [
@@ -291,6 +298,13 @@ export const TRANSLATIONS = {
     whatsapp: {
       tooltip: "Chat with us on WhatsApp",
       message: "Hello GLS, I would like information about your customs clearance services.",
+    },
+    chat: {
+      title: "GLS Assistant",
+      subtitle: "AI-powered — instant answers",
+      welcome: "Hello! 👋 I'm the GLS virtual assistant. Ask me anything about our customs clearance services, transport, file tracking or our offices.",
+      placeholder: "Your question...",
+      error: "Sorry, an error occurred. Please try again or contact us at +243 975 007 535.",
     },
   },
 };

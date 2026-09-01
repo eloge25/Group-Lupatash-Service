@@ -11,6 +11,7 @@ import Tracking from "../components/Tracking";
 import Contact from "../components/Contact";
 import Footer from "../components/Footer";
 import WhatsAppButton from "../components/WhatsAppButton";
+import ChatWidget from "../components/ChatWidget";
 
 export default function HomePage() {
   return (
@@ -27,6 +28,7 @@ export default function HomePage() {
       <Contact />
       <Footer />
       <WhatsAppButton />
+      <ChatWidget />
     </div>
   );
 }

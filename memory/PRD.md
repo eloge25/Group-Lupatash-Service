@@ -65,3 +65,9 @@ Audit: CONDITIONAL PASS -> correctifs appliqués et testés (iteration_5.json, 3
 2. Changement mot de passe: POST /api/auth/change-password (vérif mdp actuel, min 8 car., rate-limité 5/5min) + onglet "Paramètres" dans le dashboard (components/admin/SettingsPanel.jsx).
 3. i18n FR/EN: /app/frontend/src/i18n/{translations.js,LanguageContext.jsx}, toggle FR/EN dans la Navbar, persistance localStorage 'gls-lang', tout le site public traduit (admin reste FR). Les statuts de suivi sont traduits côté frontend par code.
 Note: content.js garde COMPANY/IMAGES/SECTORS(images)/TEAM(photo)/PARTNERS/DOSSIER_STATUSES(admin FR).
+
+## Intégration Claude AI (juin 2026) — testée iteration_7.json (100%)
+- Modèle: Claude Haiku 4.5 (claude-haiku-4-5-20251001) via emergentintegrations + EMERGENT_LLM_KEY (backend/.env).
+- Chatbot public bilingue: ChatWidget.jsx (bouton flottant au-dessus de WhatsApp), streaming SSE (POST /api/chat), mémoire multi-tours par session (db.chat_messages, 10 derniers messages réinjectés dans le system prompt), historique restauré au rechargement (sessionStorage 'gls-chat-session' + GET /api/chat/history/{sid}), rate limit 15/min/IP, réponses texte brut (Markdown interdit).
+- Brouillon IA admin: POST /api/admin/draft-reply/{msg_id} (protégé, 10/5min) → DraftReply.jsx dans le détail d'un message (streaming, Copier, mailto pré-rempli, Régénérer).
+- System prompt GLS_KNOWLEDGE dans server.py: faits entreprise, pas de prix/délais, hors-sujet refusé.

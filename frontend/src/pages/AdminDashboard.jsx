@@ -9,6 +9,7 @@ import { useAuth } from "../context/AuthContext";
 import { COMPANY } from "../data/content";
 import DossiersPanel from "../components/admin/DossiersPanel";
 import SettingsPanel from "../components/admin/SettingsPanel";
+import DraftReply from "../components/admin/DraftReply";
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
@@ -236,6 +237,8 @@ export default function AdminDashboard() {
                 >
                   <Mail size={16} /> Répondre par email
                 </a>
+
+                <DraftReply token={token} message={selected} />
               </div>
             ) : (
               <div className="flex flex-col items-center justify-center h-full py-20 text-center text-gls-muted">

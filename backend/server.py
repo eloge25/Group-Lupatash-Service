@@ -6,6 +6,7 @@ ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
 
 from fastapi import FastAPI, APIRouter, HTTPException, Request, Depends
+from fastapi.responses import StreamingResponse
 from starlette.middleware.cors import CORSMiddleware
 from motor.motor_asyncio import AsyncIOMotorClient
 from pydantic import BaseModel, Field, EmailStr, BeforeValidator
@@ -15,10 +16,12 @@ from bson import ObjectId
 import logging
 import bcrypt
 import jwt
+import json
 import secrets
 import string
 import time
 from collections import defaultdict
+from emergentintegrations.llm.chat import LlmChat, UserMessage, TextDelta, StreamDone
 
 mongo_url = os.environ['MONGO_URL']
 client = AsyncIOMotorClient(mongo_url)
@@ -320,6 +323,134 @@ async def track_dossier(reference: str, request: Request):
     d.pop("id", None)
     d.pop("client_phone", None)
     return d
+
+
+# ---------- AI (Claude Haiku 4.5) ----------
+CHAT_PROVIDER = "anthropic"
+CHAT_MODEL = "claude-haiku-4-5-20251001"
+
+GLS_KNOWLEDGE = """Tu es l'assistant virtuel officiel de GLS (Groupe Lupatash Service SARL), une agence en douane basée en République Démocratique du Congo.
+
+FAITS SUR L'ENTREPRISE (n'invente jamais rien d'autre) :
+- Fondée en 2019. Spécialisée dans les secteurs minier et automobile, avec expérience dans le pharmaceutique et le commercial.
+- Services : dédouanement (déclarations import/export, classement tarifaire), import & export, transport & logistique, transit & conseil, inspection & scanning des cargaisons, entreposage sous douane.
+- Directrice Générale : Mme Lukenge Pataoli Asha Konde.
+- Partenaires de référence : AECL, SicoMine, Jambo Mart, Malibu Cars.
+- Contact : téléphone/WhatsApp +243 975 007 535, email lupatashservicegls@gmail.com.
+- Agence Lubumbashi : 69B avenue Maniema, Lubumbashi, RDC. Agence Kinshasa : Av. du Commerce, Local 6/A, Galerie du 30 Juin, C/Gombe, Kinshasa, RDC.
+- Suivi de dossier : les clients disposant d'une référence (format GLS-AAAA-XXXXXXXX) peuvent suivre leur dédouanement dans la section « Suivi » du site.
+
+RÈGLES :
+- Réponds de manière concise (3-5 phrases max), professionnelle et chaleureuse.
+- Réponds en TEXTE BRUT uniquement : jamais de Markdown (pas de **, pas de #, pas de listes avec astérisques). Utilise des tirets simples si une liste est nécessaire.
+- Ne donne JAMAIS de prix ni de délais précis : invite à demander un devis via le formulaire de contact, WhatsApp ou téléphone.
+- Si tu ne sais pas, dis-le et oriente vers le contact humain.
+- Ne traite jamais de sujets hors de la logistique/douane/GLS.
+"""
+
+
+class ChatInput(BaseModel):
+    session_id: str = Field(min_length=8, max_length=100)
+    message: str = Field(min_length=1, max_length=2000)
+    lang: Optional[str] = Field(default="fr", max_length=5)
+
+
+def sse(payload: dict) -> str:
+    return f"data: {json.dumps(payload, ensure_ascii=False)}\n\n"
+
+
+@api_router.post("/chat")
+async def public_chat(data: ChatInput, request: Request):
+    check_rate_limit(request, "chat", 15, 60)
+    now = datetime.now(timezone.utc).isoformat()
+    await db.chat_messages.insert_one(
+        {"session_id": data.session_id, "role": "user", "content": data.message, "created_at": now}
+    )
+    prior = await db.chat_messages.find({"session_id": data.session_id}).sort("created_at", -1).to_list(11)
+    prior = [m for m in reversed(prior)][:-1]
+    lang_rule = "Réponds en français." if data.lang == "fr" else "Answer in English."
+    system = GLS_KNOWLEDGE + f"\n{lang_rule}"
+    if prior:
+        history = "\n".join(f"{m['role']}: {m['content'][:500]}" for m in prior)
+        system += f"\n\nHISTORIQUE RÉCENT DE CETTE CONVERSATION :\n{history}"
+    chat = LlmChat(
+        api_key=os.environ["EMERGENT_LLM_KEY"],
+        session_id=data.session_id,
+        system_message=system,
+    ).with_model(CHAT_PROVIDER, CHAT_MODEL)
+
+    async def gen():
+        parts = []
+        try:
+            async for ev in chat.stream_message(UserMessage(text=data.message)):
+                if isinstance(ev, TextDelta):
+                    parts.append(ev.content)
+                    yield sse({"delta": ev.content})
+                elif isinstance(ev, StreamDone):
+                    break
+        except Exception:
+            logger.exception("Chat stream error")
+            yield sse({"error": True})
+        text = "".join(parts)
+        if text:
+            await db.chat_messages.insert_one(
+                {"session_id": data.session_id, "role": "assistant", "content": text,
+                 "created_at": datetime.now(timezone.utc).isoformat()}
+            )
+        yield "data: [DONE]\n\n"
+
+    return StreamingResponse(gen(), media_type="text/event-stream",
+                             headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"})
+
+
+@api_router.get("/chat/history/{session_id}")
+async def chat_history(session_id: str, request: Request):
+    check_rate_limit(request, "chathist", 30, 60)
+    msgs = await db.chat_messages.find({"session_id": session_id}).sort("created_at", 1).to_list(100)
+    return [{"role": m["role"], "content": m["content"], "created_at": m["created_at"]} for m in msgs]
+
+
+@api_router.post("/admin/draft-reply/{msg_id}")
+async def draft_reply(msg_id: str, request: Request, current_user: dict = Depends(get_current_user)):
+    check_rate_limit(request, "draft", 10, 300)
+    msg = await db.contacts.find_one({"_id": parse_oid(msg_id)})
+    if not msg:
+        raise HTTPException(status_code=404, detail="Message introuvable")
+    system = (
+        "Tu es l'assistant de rédaction de GLS (Groupe Lupatash Service SARL), agence en douane en RDC "
+        "(services : dédouanement, import/export, transport, transit, inspection, entreposage ; "
+        "tél +243 975 007 535 ; agences à Lubumbashi et Kinshasa). "
+        "Rédige un brouillon de réponse email professionnel, chaleureux et concis (100-160 mots) en français, "
+        "au nom de l'équipe GLS, adapté au message du client. Ne promets jamais de prix ni de délais précis. "
+        "Texte brut uniquement, sans aucune mise en forme Markdown. "
+        "Termine par une formule de politesse et la signature « L'équipe GLS ». "
+        "Réponds uniquement avec le corps de l'email, sans objet."
+    )
+    prompt = (
+        f"Message reçu de {msg.get('name', 'un client')}"
+        f"{' (' + msg.get('company', '') + ')' if msg.get('company') else ''} "
+        f"— sujet : {msg.get('subject') or 'non précisé'} :\n\n{msg.get('message', '')}"
+    )
+    chat = LlmChat(
+        api_key=os.environ["EMERGENT_LLM_KEY"],
+        session_id=f"draft-{msg_id}-{int(time.time())}",
+        system_message=system,
+    ).with_model(CHAT_PROVIDER, CHAT_MODEL)
+
+    async def gen():
+        try:
+            async for ev in chat.stream_message(UserMessage(text=prompt)):
+                if isinstance(ev, TextDelta):
+                    yield sse({"delta": ev.content})
+                elif isinstance(ev, StreamDone):
+                    break
+        except Exception:
+            logger.exception("Draft stream error")
+            yield sse({"error": True})
+        yield "data: [DONE]\n\n"
+
+    return StreamingResponse(gen(), media_type="text/event-stream",
+                             headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"})
 
 
 @api_router.get("/")
