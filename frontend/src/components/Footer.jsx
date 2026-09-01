@@ -1,9 +1,11 @@
 import React from "react";
 import { Phone, Mail, MapPin, ArrowUpRight } from "lucide-react";
 import { Link } from "react-router-dom";
-import { COMPANY, NAV_LINKS, SERVICES } from "../data/content";
+import { COMPANY } from "../data/content";
+import { useLang } from "../i18n/LanguageContext";
 
 export default function Footer() {
+  const { t } = useLang();
   return (
     <footer className="bg-gls-deep text-slate-300 relative grain">
       <div className="relative z-10 max-w-7xl mx-auto px-6 lg:px-10 py-16">
@@ -15,15 +17,14 @@ export default function Footer() {
               className="h-16 w-auto object-contain [filter:drop-shadow(0_0_10px_rgba(255,255,255,0.5))_brightness(1.1)]"
             />
             <p className="mt-5 text-sm leading-relaxed text-slate-400">
-              {COMPANY.legal} — Agence en douane spécialisée dans le transport, le transit et le
-              dédouanement depuis {COMPANY.founded}.
+              {COMPANY.legal} — {t.footer.tagline}
             </p>
           </div>
 
           <div>
-            <h4 className="font-display text-white font-semibold mb-4">Navigation</h4>
+            <h4 className="font-display text-white font-semibold mb-4">{t.footer.navigation}</h4>
             <ul className="space-y-2.5">
-              {NAV_LINKS.map((l) => (
+              {t.nav.map((l) => (
                 <li key={l.href}>
                   <a href={l.href} className="text-sm hover:text-gls-red transition-colors">{l.label}</a>
                 </li>
@@ -32,16 +33,16 @@ export default function Footer() {
           </div>
 
           <div>
-            <h4 className="font-display text-white font-semibold mb-4">Services</h4>
+            <h4 className="font-display text-white font-semibold mb-4">{t.footer.services}</h4>
             <ul className="space-y-2.5">
-              {SERVICES.slice(0, 5).map((s) => (
+              {t.services.items.slice(0, 5).map((s) => (
                 <li key={s.title} className="text-sm text-slate-400">{s.title}</li>
               ))}
             </ul>
           </div>
 
           <div>
-            <h4 className="font-display text-white font-semibold mb-4">Contact</h4>
+            <h4 className="font-display text-white font-semibold mb-4">{t.footer.contact}</h4>
             <a href={`tel:${COMPANY.phone}`} className="flex items-center gap-2 text-sm hover:text-gls-red transition-colors mb-3">
               <Phone size={16} /> {COMPANY.phone}
             </a>
@@ -55,15 +56,15 @@ export default function Footer() {
               <MapPin size={16} className="mt-0.5 shrink-0" /> {COMPANY.addressKinshasa}
             </div>
             <a href="#contact" className="mt-5 inline-flex items-center gap-1.5 bg-gls-red text-white px-5 py-2.5 rounded-full text-sm font-bold hover:bg-white hover:text-gls-navy transition-colors">
-              Demander un devis <ArrowUpRight size={16} />
+              {t.cta} <ArrowUpRight size={16} />
             </a>
           </div>
         </div>
 
         <div className="mt-14 pt-7 border-t border-white/10 flex flex-col sm:flex-row justify-between items-center gap-3 text-xs text-slate-500">
-          <p>© {new Date().getFullYear()} {COMPANY.legal}. Tous droits réservés.</p>
+          <p>© {new Date().getFullYear()} {COMPANY.legal}. {t.footer.rights}</p>
           <Link to="/admin" className="hover:text-gls-red transition-colors" data-testid="footer-admin-link">
-            Espace administrateur
+            {t.footer.admin}
           </Link>
         </div>
       </div>

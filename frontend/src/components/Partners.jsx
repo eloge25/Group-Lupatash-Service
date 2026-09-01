@@ -1,22 +1,20 @@
 import React from "react";
-import { motion } from "framer-motion";
 import * as Icons from "lucide-react";
 import { PARTNERS } from "../data/content";
+import { useLang } from "../i18n/LanguageContext";
 
 export default function Partners() {
+  const { t } = useLang();
   const loop = [...PARTNERS, ...PARTNERS];
   return (
     <section id="partenaires" className="py-24 lg:py-28 bg-white">
       <div className="max-w-7xl mx-auto px-6 lg:px-10">
         <div className="text-center max-w-2xl mx-auto">
-          <span className="text-xs font-bold tracking-[0.25em] uppercase text-gls-red">Ils nous font confiance</span>
+          <span className="text-xs font-bold tracking-[0.25em] uppercase text-gls-red">{t.partners.kicker}</span>
           <h2 className="mt-4 font-display text-3xl lg:text-4xl font-bold tracking-tight text-gls-navy">
-            Des partenaires de référence
+            {t.partners.title}
           </h2>
-          <p className="mt-5 text-base text-gls-muted">
-            GLS a accompagné de grandes entreprises telles que AECL, SicoMine, Jambo Mart, Malibu Cars
-            et bien d'autres.
-          </p>
+          <p className="mt-5 text-base text-gls-muted">{t.partners.desc}</p>
         </div>
       </div>
 

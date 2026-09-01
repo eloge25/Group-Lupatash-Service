@@ -1,17 +1,45 @@
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Menu, X, Phone } from "lucide-react";
-import { COMPANY, NAV_LINKS } from "../data/content";
+import { COMPANY } from "../data/content";
+import { useLang } from "../i18n/LanguageContext";
 
 export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
+  const { lang, setLang, t } = useLang();
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 40);
     window.addEventListener("scroll", onScroll);
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
+
+  const LangToggle = ({ dark }) => (
+    <div
+      className={`flex items-center rounded-full border overflow-hidden text-xs font-bold ${
+        dark ? "border-gls-border" : "border-white/30"
+      }`}
+      data-testid="lang-toggle"
+    >
+      {["fr", "en"].map((l) => (
+        <button
+          key={l}
+          onClick={() => setLang(l)}
+          data-testid={`lang-${l}`}
+          className={`px-2.5 py-1.5 uppercase transition-colors ${
+            lang === l
+              ? "bg-gls-red text-white"
+              : dark
+              ? "text-gls-navy hover:text-gls-red"
+              : "text-white hover:text-gls-red"
+          }`}
+        >
+          {l}
+        </button>
+      ))}
+    </div>
+  );
 
   return (
     <motion.header
@@ -34,8 +62,8 @@ export default function Navbar() {
           />
         </a>
 
-        <nav className="hidden lg:flex items-center gap-9">
-          {NAV_LINKS.map((l) => (
+        <nav className="hidden lg:flex items-center gap-7">
+          {t.nav.map((l) => (
             <a
               key={l.href}
               href={l.href}
@@ -49,22 +77,28 @@ export default function Navbar() {
           ))}
         </nav>
 
-        <a
-          href="#contact"
-          data-testid="nav-cta-quote"
-          className="hidden lg:inline-flex items-center gap-2 bg-gls-red text-white px-5 py-2.5 rounded-full text-sm font-bold tracking-wide hover:bg-gls-navy transition-colors duration-300"
-        >
-          <Phone size={16} /> Demander un devis
-        </a>
+        <div className="hidden lg:flex items-center gap-4">
+          <LangToggle dark={scrolled} />
+          <a
+            href="#contact"
+            data-testid="nav-cta-quote"
+            className="inline-flex items-center gap-2 bg-gls-red text-white px-5 py-2.5 rounded-full text-sm font-bold tracking-wide hover:bg-gls-navy transition-colors duration-300"
+          >
+            <Phone size={16} /> {t.cta}
+          </a>
+        </div>
 
-        <button
-          className={`lg:hidden ${scrolled ? "text-gls-navy" : "text-white"}`}
-          onClick={() => setOpen(!open)}
-          data-testid="nav-mobile-toggle"
-          aria-label="Menu"
-        >
-          {open ? <X size={28} /> : <Menu size={28} />}
-        </button>
+        <div className="lg:hidden flex items-center gap-3">
+          <LangToggle dark={scrolled} />
+          <button
+            className={scrolled ? "text-gls-navy" : "text-white"}
+            onClick={() => setOpen(!open)}
+            data-testid="nav-mobile-toggle"
+            aria-label="Menu"
+          >
+            {open ? <X size={28} /> : <Menu size={28} />}
+          </button>
+        </div>
       </div>
 
       <AnimatePresence>
@@ -77,7 +111,7 @@ export default function Navbar() {
             data-testid="nav-mobile-menu"
           >
             <div className="px-6 py-6 flex flex-col gap-4">
-              {NAV_LINKS.map((l) => (
+              {t.nav.map((l) => (
                 <a
                   key={l.href}
                   href={l.href}
@@ -92,7 +126,7 @@ export default function Navbar() {
                 onClick={() => setOpen(false)}
                 className="mt-2 bg-gls-red text-white px-5 py-3 rounded-full text-center font-bold"
               >
-                Demander un devis
+                {t.cta}
               </a>
             </div>
           </motion.div>

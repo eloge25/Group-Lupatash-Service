@@ -59,3 +59,9 @@ Audit: CONDITIONAL PASS -> correctifs appliqués et testés (iteration_5.json, 3
 - SEC-002: parse_oid() -> 404 propre au lieu de 500 sur ObjectId invalide (dossiers + messages).
 - Brute force login: verrouillage 15 min après 5 échecs/IP + 10 req/min. Contact: 5/5min/IP + max_length Pydantic sur tous les champs. JWT: 24h au lieu de 7j. CORS: allow_credentials=False. Seed admin: fail-fast sur env manquantes, create-only (plus de reset au boot). .gitignore: .env ajouté. Index unique sur dossiers.reference.
 - Rate limiting en mémoire par IP (X-Forwarded-For 1er hop) — suffisant mono-pod; Redis si scaling horizontal (backlog P2).
+
+## 3 nouvelles fonctionnalités (juin 2026) — testées iteration_6.json (100%)
+1. WhatsApp Dossier: champ client_phone sur les dossiers (privé, jamais exposé via /api/track) + bouton WhatsApp vert par ligne dans l'admin (wa.me + message FR avec référence et lien #suivi).
+2. Changement mot de passe: POST /api/auth/change-password (vérif mdp actuel, min 8 car., rate-limité 5/5min) + onglet "Paramètres" dans le dashboard (components/admin/SettingsPanel.jsx).
+3. i18n FR/EN: /app/frontend/src/i18n/{translations.js,LanguageContext.jsx}, toggle FR/EN dans la Navbar, persistance localStorage 'gls-lang', tout le site public traduit (admin reste FR). Les statuts de suivi sont traduits côté frontend par code.
+Note: content.js garde COMPANY/IMAGES/SECTORS(images)/TEAM(photo)/PARTNERS/DOSSIER_STATUSES(admin FR).

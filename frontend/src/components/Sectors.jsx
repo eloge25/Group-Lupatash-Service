@@ -2,24 +2,25 @@ import React from "react";
 import { motion } from "framer-motion";
 import * as Icons from "lucide-react";
 import { SECTORS } from "../data/content";
+import { useLang } from "../i18n/LanguageContext";
 
 export default function Sectors() {
+  const { t } = useLang();
   return (
     <section id="secteurs" className="relative py-24 lg:py-32 bg-gls-deep grain overflow-hidden">
       <div className="relative z-10 max-w-7xl mx-auto px-6 lg:px-10">
         <div className="max-w-2xl">
-          <span className="text-xs font-bold tracking-[0.25em] uppercase text-gls-red">Nos secteurs</span>
+          <span className="text-xs font-bold tracking-[0.25em] uppercase text-gls-red">{t.sectors.kicker}</span>
           <h2 className="mt-4 font-display text-3xl lg:text-4xl font-bold tracking-tight text-white">
-            Une expertise au cœur de votre industrie
+            {t.sectors.title}
           </h2>
-          <p className="mt-5 text-base text-slate-300 leading-relaxed">
-            GLS maîtrise les exigences spécifiques de chaque secteur pour offrir un service sur mesure.
-          </p>
+          <p className="mt-5 text-base text-slate-300 leading-relaxed">{t.sectors.desc}</p>
         </div>
 
         <div className="mt-14 grid sm:grid-cols-2 lg:grid-cols-4 gap-5">
-          {SECTORS.map((s, i) => {
+          {t.sectors.items.map((s, i) => {
             const Icon = Icons[s.icon] || Icons.Box;
+            const image = SECTORS[i]?.image;
             return (
               <motion.div
                 key={s.title}
@@ -31,7 +32,7 @@ export default function Sectors() {
                 data-testid={`sector-card-${i}`}
               >
                 <img
-                  src={s.image}
+                  src={image}
                   alt={s.title}
                   className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
                 />

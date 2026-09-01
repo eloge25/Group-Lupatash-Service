@@ -134,8 +134,14 @@ class ContactMessage(BaseModel):
 DOSSIER_STATUSES = ["recu", "documents", "declaration", "liquidation", "libere", "livre"]
 
 
+class ChangePasswordInput(BaseModel):
+    current_password: str = Field(min_length=1, max_length=128)
+    new_password: str = Field(min_length=8, max_length=128)
+
+
 class DossierCreate(BaseModel):
     client_name: str = Field(min_length=1, max_length=200)
+    client_phone: Optional[str] = Field(default="", max_length=50)
     company: Optional[str] = Field(default="", max_length=200)
     description: Optional[str] = Field(default="", max_length=2000)
     origin: Optional[str] = Field(default="", max_length=200)
@@ -152,6 +158,7 @@ def serialize_dossier(d: dict) -> dict:
         "id": str(d["_id"]),
         "reference": d["reference"],
         "client_name": d.get("client_name", ""),
+        "client_phone": d.get("client_phone", ""),
         "company": d.get("company", ""),
         "description": d.get("description", ""),
         "origin": d.get("origin", ""),
@@ -195,6 +202,19 @@ async def login(data: LoginInput, request: Request):
 @api_router.get("/auth/me")
 async def me(current_user: dict = Depends(get_current_user)):
     return {"id": current_user["_id"], "email": current_user["email"], "name": current_user.get("name", "Admin")}
+
+
+@api_router.post("/auth/change-password")
+async def change_password(data: ChangePasswordInput, request: Request, current_user: dict = Depends(get_current_user)):
+    check_rate_limit(request, "chpwd", 5, 300)
+    user = await db.users.find_one({"_id": parse_oid(current_user["_id"])})
+    if not user or not verify_password(data.current_password, user["password_hash"]):
+        raise HTTPException(status_code=401, detail="Mot de passe actuel incorrect")
+    await db.users.update_one(
+        {"_id": user["_id"]},
+        {"$set": {"password_hash": hash_password(data.new_password), "password_changed_at": datetime.now(timezone.utc).isoformat()}},
+    )
+    return {"success": True}
 
 
 # ---------- Contact routes ----------
@@ -298,6 +318,7 @@ async def track_dossier(reference: str, request: Request):
         raise HTTPException(status_code=404, detail="Aucun dossier trouvé avec cette référence")
     d = serialize_dossier(dossier)
     d.pop("id", None)
+    d.pop("client_phone", None)
     return d
 
 

@@ -5,7 +5,13 @@ import { Plus, Trash2, Loader2, Copy, FolderOpen, X } from "lucide-react";
 import { DOSSIER_STATUSES } from "../../data/content";
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
-const EMPTY = { client_name: "", company: "", origin: "", destination: "", description: "" };
+const EMPTY = { client_name: "", client_phone: "", company: "", origin: "", destination: "", description: "" };
+
+const WaIcon = () => (
+  <svg viewBox="0 0 32 32" fill="currentColor" className="w-4 h-4">
+    <path d="M16.004 3C8.83 3 3 8.83 3 16.003c0 2.292.6 4.53 1.74 6.502L3 29l6.66-1.746a12.96 12.96 0 0 0 6.34 1.652h.005C23.177 28.906 29 23.076 29 15.903 29 8.83 23.177 3 16.004 3zm5.916 15.664c-.324-.162-1.917-.946-2.214-1.054-.297-.108-.513-.162-.73.162-.216.324-.837 1.054-1.026 1.27-.19.217-.378.244-.702.082-.324-.163-1.368-.505-2.606-1.61-.963-.858-1.613-1.918-1.803-2.242-.189-.324-.02-.5.142-.66.146-.146.325-.379.487-.568.162-.19.216-.325.324-.541.108-.217.054-.406-.027-.568-.081-.163-.729-1.759-.999-2.408-.263-.632-.53-.546-.729-.556l-.621-.01c-.216 0-.567.08-.864.405-.297.324-1.134 1.108-1.134 2.704 0 1.595 1.161 3.137 1.323 3.354.162.216 2.285 3.49 5.536 4.893.774.334 1.377.533 1.848.683.777.247 1.484.212 2.043.128.623-.093 1.917-.784 2.187-1.54.27-.758.27-1.407.19-1.542-.081-.135-.297-.217-.621-.379z" />
+  </svg>
+);
 
 export default function DossiersPanel({ token }) {
   const headers = { Authorization: `Bearer ${token}` };
@@ -86,6 +92,7 @@ export default function DossiersPanel({ token }) {
       {showForm && (
         <form onSubmit={create} className="bg-white rounded-xl border border-gls-border p-6 mb-6 grid sm:grid-cols-2 gap-4" data-testid="dossier-form">
           <Field label="Nom du client *" value={form.client_name} onChange={(v) => setForm({ ...form, client_name: v })} required testid="dossier-client" />
+          <Field label="Téléphone WhatsApp du client" value={form.client_phone} onChange={(v) => setForm({ ...form, client_phone: v })} placeholder="ex. +243 970 000 000" testid="dossier-phone" />
           <Field label="Entreprise" value={form.company} onChange={(v) => setForm({ ...form, company: v })} testid="dossier-company" />
           <Field label="Origine" value={form.origin} onChange={(v) => setForm({ ...form, origin: v })} placeholder="ex. Durban, Afrique du Sud" testid="dossier-origin" />
           <Field label="Destination" value={form.destination} onChange={(v) => setForm({ ...form, destination: v })} placeholder="ex. Lubumbashi, RDC" testid="dossier-destination" />
@@ -143,6 +150,20 @@ export default function DossiersPanel({ token }) {
                     <option key={s.code} value={s.code}>{s.label}</option>
                   ))}
                 </select>
+                {d.client_phone && (
+                  <a
+                    href={`https://wa.me/${d.client_phone.replace(/\D/g, "")}?text=${encodeURIComponent(
+                      `Bonjour ${d.client_name}, votre dossier de dédouanement GLS est enregistré sous la référence ${d.reference}. Statut actuel : ${DOSSIER_STATUSES.find((s) => s.code === d.status)?.label}. Suivez son avancement en ligne : ${window.location.origin}/#suivi`
+                    )}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    data-testid={`dossier-whatsapp-${d.reference}`}
+                    className="inline-flex items-center gap-1.5 bg-[#25D366] text-white px-3 py-2 rounded-lg text-xs font-bold hover:bg-[#1da851] transition-colors"
+                    title="Envoyer la référence au client par WhatsApp"
+                  >
+                    <WaIcon /> WhatsApp
+                  </a>
+                )}
                 <button
                   onClick={() => del(d.id)}
                   data-testid={`dossier-delete-${d.reference}`}

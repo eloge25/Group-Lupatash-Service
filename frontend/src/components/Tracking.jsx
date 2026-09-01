@@ -2,11 +2,12 @@ import React, { useState } from "react";
 import { motion } from "framer-motion";
 import axios from "axios";
 import { Search, Loader2, PackageSearch, Check, MapPin, CalendarClock } from "lucide-react";
-import { DOSSIER_STATUSES } from "../data/content";
+import { useLang } from "../i18n/LanguageContext";
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
 export default function Tracking() {
+  const { t } = useLang();
   const [reference, setReference] = useState("");
   const [dossier, setDossier] = useState(null);
   const [error, setError] = useState("");
@@ -22,13 +23,15 @@ export default function Tracking() {
       const res = await axios.get(`${API}/track/${encodeURIComponent(reference.trim())}`);
       setDossier(res.data);
     } catch (err) {
-      setError(err.response?.data?.detail || "Aucun dossier trouvé avec cette référence");
+      const status = err.response?.status;
+      setError(status === 429 ? t.tracking.tooMany : t.tracking.notFound);
     } finally {
       setLoading(false);
     }
   };
 
-  const currentIndex = dossier ? DOSSIER_STATUSES.findIndex((s) => s.code === dossier.status) : -1;
+  const statuses = t.tracking.statuses;
+  const currentIndex = dossier ? statuses.findIndex((s) => s.code === dossier.status) : -1;
 
   return (
     <section id="suivi" className="py-24 lg:py-32 bg-white" data-testid="tracking-section">
@@ -40,15 +43,12 @@ export default function Tracking() {
           transition={{ duration: 0.6 }}
         >
           <span className="inline-block text-gls-red font-bold text-sm tracking-[0.2em] uppercase mb-3">
-            Suivi de dossier
+            {t.tracking.kicker}
           </span>
           <h2 className="font-display text-3xl sm:text-4xl lg:text-5xl font-bold text-gls-navy">
-            Suivez votre dédouanement en temps réel
+            {t.tracking.title}
           </h2>
-          <p className="mt-4 text-gls-muted max-w-xl">
-            Entrez la référence de votre dossier (fournie par notre équipe, ex. GLS-2026-A1B2C3D4) pour
-            consulter l'avancement de vos opérations douanières.
-          </p>
+          <p className="mt-4 text-gls-muted max-w-xl">{t.tracking.desc}</p>
         </motion.div>
 
         <form onSubmit={track} className="mt-10 flex flex-col sm:flex-row gap-3" data-testid="tracking-form">
@@ -57,7 +57,7 @@ export default function Tracking() {
             <input
               value={reference}
               onChange={(e) => setReference(e.target.value.toUpperCase())}
-              placeholder="Référence du dossier — ex. GLS-2026-A1B2C3D4"
+              placeholder={t.tracking.placeholder}
               data-testid="tracking-input"
               className="w-full rounded-full border border-gls-border pl-12 pr-4 py-4 text-sm font-semibold tracking-wide focus:border-gls-navy focus:ring-2 focus:ring-gls-navy/10 outline-none uppercase"
             />
@@ -69,7 +69,7 @@ export default function Tracking() {
             className="inline-flex items-center justify-center gap-2 bg-gls-navy text-white px-8 py-4 rounded-full text-sm font-bold hover:bg-gls-red transition-colors disabled:opacity-60"
           >
             {loading ? <Loader2 size={18} className="animate-spin" /> : <Search size={18} />}
-            Suivre
+            {t.tracking.button}
           </button>
         </form>
 
@@ -88,7 +88,7 @@ export default function Tracking() {
           >
             <div className="flex flex-wrap items-start justify-between gap-4 pb-6 border-b border-gls-border">
               <div>
-                <div className="text-xs uppercase tracking-wide text-gls-muted font-semibold">Référence</div>
+                <div className="text-xs uppercase tracking-wide text-gls-muted font-semibold">{t.tracking.refLabel}</div>
                 <div className="font-display text-2xl font-extrabold text-gls-navy" data-testid="tracking-reference">
                   {dossier.reference}
                 </div>
@@ -102,10 +102,9 @@ export default function Tracking() {
               )}
             </div>
 
-            {/* Progress steps */}
             <div className="mt-8">
               <div className="grid grid-cols-3 sm:grid-cols-6 gap-y-6">
-                {DOSSIER_STATUSES.map((s, i) => {
+                {statuses.map((s, i) => {
                   const done = i <= currentIndex;
                   const active = i === currentIndex;
                   return (
@@ -133,12 +132,11 @@ export default function Tracking() {
               </div>
             </div>
 
-            {/* History */}
             <div className="mt-9">
-              <div className="text-xs uppercase tracking-wide text-gls-muted font-semibold mb-3">Historique</div>
+              <div className="text-xs uppercase tracking-wide text-gls-muted font-semibold mb-3">{t.tracking.historyLabel}</div>
               <div className="space-y-3">
                 {[...dossier.history].reverse().map((h, i) => {
-                  const label = DOSSIER_STATUSES.find((s) => s.code === h.status)?.label || h.status;
+                  const label = statuses.find((s) => s.code === h.status)?.label || h.status;
                   return (
                     <div key={i} className="flex items-start gap-3 bg-white border border-gls-border rounded-xl px-4 py-3">
                       <CalendarClock size={16} className="text-gls-red mt-0.5 shrink-0" />

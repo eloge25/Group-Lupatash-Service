@@ -2,8 +2,10 @@ import React from "react";
 import { motion } from "framer-motion";
 import { Quote } from "lucide-react";
 import { TEAM } from "../data/content";
+import { useLang } from "../i18n/LanguageContext";
 
 export default function Team() {
+  const { t } = useLang();
   return (
     <section id="equipe" className="relative py-24 lg:py-32 bg-gls-deep grain overflow-hidden" data-testid="team-section">
       <div className="relative z-10 max-w-7xl mx-auto px-6 lg:px-10">
@@ -14,15 +16,15 @@ export default function Team() {
           transition={{ duration: 0.6 }}
         >
           <span className="inline-block text-gls-red font-bold text-sm tracking-[0.2em] uppercase mb-3">
-            Notre Équipe
+            {t.team.kicker}
           </span>
           <h2 className="font-display text-3xl sm:text-4xl lg:text-5xl font-bold text-white max-w-2xl">
-            Une direction engagée à votre service
+            {t.team.title}
           </h2>
         </motion.div>
 
         <div className="mt-14 grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {TEAM.map((member, i) => (
+          {t.team.members.map((member, i) => (
             <motion.div
               key={member.name}
               initial={{ opacity: 0, y: 40 }}
@@ -34,7 +36,7 @@ export default function Team() {
             >
               <div className="relative h-96 overflow-hidden">
                 <img
-                  src={member.photo}
+                  src={TEAM[i]?.photo}
                   alt={member.name}
                   className="w-full h-full object-cover object-top group-hover:scale-105 transition-transform duration-700"
                 />

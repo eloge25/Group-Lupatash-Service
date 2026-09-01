@@ -3,11 +3,12 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { toast } from "sonner";
 import {
-  LogOut, Mail, Phone, Building2, Trash2, Inbox, MailOpen, Search, RefreshCw, CheckCheck, FolderOpen,
+  LogOut, Mail, Phone, Building2, Trash2, Inbox, MailOpen, Search, RefreshCw, CheckCheck, FolderOpen, Settings,
 } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import { COMPANY } from "../data/content";
 import DossiersPanel from "../components/admin/DossiersPanel";
+import SettingsPanel from "../components/admin/SettingsPanel";
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
@@ -122,10 +123,21 @@ export default function AdminDashboard() {
           >
             <FolderOpen size={16} /> Dossiers
           </button>
+          <button
+            onClick={() => setTab("settings")}
+            data-testid="admin-tab-settings"
+            className={`inline-flex items-center gap-2 px-5 py-2.5 rounded-full text-sm font-bold transition-colors ${
+              tab === "settings" ? "bg-gls-navy text-white" : "bg-white border border-gls-border text-gls-navy hover:border-gls-navy"
+            }`}
+          >
+            <Settings size={16} /> Paramètres
+          </button>
         </div>
 
         {tab === "dossiers" ? (
           <DossiersPanel token={token} />
+        ) : tab === "settings" ? (
+          <SettingsPanel token={token} />
         ) : (
         <>
         {/* Stats */}
